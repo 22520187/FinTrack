@@ -5,7 +5,7 @@ import "./App.css";
 
 // You'll need to create these components
 import AllUserRoutes from "./routes/AllUserRoutes";
-import Navbar from "./components/User/Navbar/Navbar";
+import Navbar from "./components/Navbar/Navbar";
 
 function App() {
   return (
