@@ -1,16 +1,25 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
-const COLORS = ['#F44336', '#2196F3', '#FFEB3B', '#4CAF50', '#9C27B0', '#FF9800', '#795548', '#607D8B'];
+const COLORS = [
+  '#50bbf5', // primary-400
+  '#5069f5', // secondary-400
+  '#f58a50', // compleprimary-300
+  '#f4ee69', // complesecond-400
+  '#46aff2', // primary-500
+  '#214cf0', // secondary-500
+  '#f27225', // compleprimary-400
+  '#f1e951', // complesecond-500
+];
 
 const ExpensesByCategoryChart = ({ data }) => {
   const total = data.reduce((sum, item) => sum + item.value, 0);
-  
+
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Expenses by Category</CardTitle>
-        <CardDescription>Your spending distribution</CardDescription>
+        <CardTitle className="text-primary-800 dark:text-primary-300">Expenses by Category</CardTitle>
+        <CardDescription className="text-primary-600 dark:text-primary-400">Your spending distribution</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -38,7 +47,7 @@ const ExpensesByCategoryChart = ({ data }) => {
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-muted-foreground">No expense data available</p>
+              <p className="text-primary-500 dark:text-primary-400">No expense data available</p>
             </div>
           )}
         </div>

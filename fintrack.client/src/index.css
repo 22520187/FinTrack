@@ -77,7 +77,7 @@
   --color-orange-700: #c2410c;
   --color-orange-800: #9a3412;
   --color-orange-900: #7c2d12;
- 
+
 
   --animate-gradient: gradient 8s linear infinite;
 
@@ -238,6 +238,24 @@
 
   .checkbox-item {
     @apply flex items-center gap-2 text-sm py-1.5 hover:text-primary transition-colors;
+  }
+
+  /* Financial text colors */
+  .income-text {
+    @apply text-secondary-600;
+  }
+
+  .expense-text {
+    @apply text-compleprimary-600;
+  }
+
+  /* Financial background colors */
+  .bg-finance-income {
+    @apply bg-secondary-400;
+  }
+
+  .bg-finance-expense {
+    @apply bg-compleprimary-400;
   }
 }
 
