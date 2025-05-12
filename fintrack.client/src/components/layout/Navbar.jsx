@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from "../ui/button";
 
@@ -32,6 +32,9 @@ const Navbar = () => {
           </Link>
           <Link to="/reports" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
             Reports
+          </Link>
+          <Link to="/settings" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
+            Settings
           </Link>
         </nav>
 
@@ -93,6 +96,14 @@ const Navbar = () => {
               onClick={() => setMobileMenuOpen(false)}
             >
               Reports
+            </Link>
+            <Link
+              to="/settings"
+              className="flex items-center gap-2 text-lg font-semibold text-ebony dark:text-white-smoke hover:text-primary-600"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Settings className="h-5 w-5" />
+              Settings
             </Link>
             <div className="flex flex-col gap-2 mt-4">
               <Button variant="outline" asChild>
