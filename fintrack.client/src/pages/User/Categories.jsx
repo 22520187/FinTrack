@@ -200,7 +200,7 @@ const Categories = () => {
         <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-primary-900 dark:text-primary-100">Categories</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Add Category</Button>
+            <Button className="cursor-pointer">Add Category</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -263,7 +263,7 @@ const Categories = () => {
               <CardTitle className="text-lg flex justify-between items-center text-primary-900 dark:text-primary-100">
                 {category.name}
                 <span className={`text-xs px-2 py-1 rounded ${
-                  category.type === 'expense' ? 'bg-compleprimary-500/10 text-compleprimary-500' : 'bg-secondary-400/10 text-secondary-400'
+                  category.type === 'expense' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
                 }`}>
                   {category.type}
                 </span>
@@ -276,10 +276,11 @@ const Categories = () => {
             </CardContent>
             <CardFooter className="pt-0">
               <div className="flex space-x-2 ml-auto">
-                <Button variant="ghost" size="icon" onClick={() => handleEditCategory(category.id)}>
+                <Button className= "cursor-pointer" variant="ghost" size="icon" onClick={() => handleEditCategory(category.id)}>
                   <Edit className="h-4 w-4" />
                 </Button>
                 <Button 
+                  className= "cursor-pointer"
                   variant="ghost" 
                   size="icon" 
                   onClick={() => handleDeleteCategory(category.id)}
@@ -341,7 +342,7 @@ const Categories = () => {
           </div>
           <Button 
             onClick={handleUpdateCategory} 
-            className="w-full bg-primary-400 hover:bg-primary-500 text-white" 
+            className="w-full bg-primary-400 hover:bg-primary-500 text-white cursor-pointer" 
             disabled={editingCategory?.isDefault}
           >
             Update Category

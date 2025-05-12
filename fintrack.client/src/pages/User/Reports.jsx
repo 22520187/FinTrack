@@ -85,11 +85,11 @@ const Reports = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <h1 className="text-3xl font-bold mb-4 sm:mb-0">Financial Reports</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleExport('pdf')}>
+          <Button className="cursor-pointer" variant="outline" onClick={() => handleExport('pdf')}>
             <FileText className="w-4 h-4 mr-2" />
             Export PDF
           </Button>
-          <Button variant="outline" onClick={() => handleExport('excel')}>
+          <Button className="cursor-pointer" variant="outline" onClick={() => handleExport('excel')}>
             <FileText className="w-4 h-4 mr-2" />
             Export Excel
           </Button>
@@ -101,11 +101,11 @@ const Reports = () => {
           <SelectTrigger className="w-full sm:w-[240px]">
             <SelectValue placeholder="Select time range" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="month">Last Month</SelectItem>
-            <SelectItem value="quarter">Last Quarter</SelectItem>
-            <SelectItem value="halfYear">Last 6 Months</SelectItem>
-            <SelectItem value="year">Last 12 Months</SelectItem>
+          <SelectContent className="cursor-pointer">
+            <SelectItem className="cursor-pointer" value="month">Last Month</SelectItem>
+            <SelectItem className="cursor-pointer" value="quarter">Last Quarter</SelectItem>
+            <SelectItem className="cursor-pointer" value="halfYear">Last 6 Months</SelectItem>
+            <SelectItem className="cursor-pointer" value="year">Last 12 Months</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -143,9 +143,9 @@ const Reports = () => {
       
       <Tabs defaultValue="overview">
         <TabsList className="mb-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="income-expense">Income vs. Expenses</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger className="cursor-pointer" value="overview">Overview</TabsTrigger>
+          <TabsTrigger className="cursor-pointer" value="income-expense">Income vs. Expenses</TabsTrigger>
+          <TabsTrigger className="cursor-pointer" value="categories">Categories</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">

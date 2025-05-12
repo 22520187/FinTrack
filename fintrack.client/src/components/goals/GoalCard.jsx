@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { Flag, MoreVertical, Edit, Trash2, Plus } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
@@ -24,40 +24,83 @@ const GoalCard = ({ goal, onEdit, onDelete, onUpdateProgress }) => {
   const [progressAmount, setProgressAmount] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const progressPercentage = (goal.currentAmount / goal.targetAmount) * 100;
-  const isCompleted = progressPercentage >= 100;
-  const daysLeft = Math.ceil((goal.deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  // Use useMemo for calculations to prevent recalculations on every render
+  const progressPercentage = useMemo(() => {
+    return (goal.currentAmount / goal.targetAmount) * 100;
+  }, [goal.currentAmount, goal.targetAmount]);
+  
+  const isCompleted = useMemo(() => progressPercentage >= 100, [progressPercentage]);
+  
+  // Safely handle the deadline date
+  const daysLeft = useMemo(() => {
+    try {
+      const deadlineDate = goal.deadline instanceof Date 
+        ? goal.deadline 
+        : new Date(goal.deadline);
+        
+      if (isNaN(deadlineDate.getTime())) {
+        return 0; // Return a default value if date is invalid
+      }
+      
+      return Math.ceil((deadlineDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    } catch (error) {
+      console.error("Error calculating days left:", error);
+      return 0;
+    }
+  }, [goal.deadline]);
 
   const handleProgressUpdate = () => {
-    const amount = parseFloat(progressAmount);
-    if (!isNaN(amount) && amount > 0) {
-      onUpdateProgress(goal.id, amount);
-      setProgressAmount('');
-      setIsAddDialogOpen(false);
+    try {
+      const amount = parseFloat(progressAmount);
+      if (!isNaN(amount) && amount > 0) {
+        onUpdateProgress(goal.id, amount);
+        setProgressAmount('');
+        setIsAddDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error updating progress:", error);
     }
   };
 
+  // Safely format the date
+  const formattedDate = useMemo(() => {
+    try {
+      const date = goal.deadline instanceof Date 
+        ? goal.deadline 
+        : new Date(goal.deadline);
+        
+      if (isNaN(date.getTime())) {
+        return "Invalid date";
+      }
+      
+      return format(date, 'MMM d, yyyy');
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Invalid date";
+    }
+  }, [goal.deadline]);
+
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary-100 to-primary-50 px-6 py-4 flex flex-row justify-between items-center">
+      <CardHeader className="bg-gradient-to-r from-primary-200 to-primary-100 px-6 py-4 flex flex-row justify-between items-center">
         <div className="flex gap-2 items-center">
           <Flag className="h-5 w-5 text-primary-600" />
           <CardTitle className="text-xl text-primary-800">{goal.name}</CardTitle>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-primary-50">
+            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-primary-50 cursor-pointer">
               <MoreVertical className="h-4 w-4 text-primary-700" />
               <span className="sr-only">More options</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(goal.id)}>
+          <DropdownMenuContent align="end" className="bg-white border border-primary-100 shadow-md">
+            <DropdownMenuItem onClick={() => onEdit(goal.id)} className="cursor-pointer hover:bg-primary-50">
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive" onClick={() => onDelete(goal.id)}>
+            <DropdownMenuSeparator className="bg-primary-100" />
+            <DropdownMenuItem className="text-destructive cursor-pointer hover:bg-red-50" onClick={() => onDelete(goal.id)}>
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -93,7 +136,7 @@ const GoalCard = ({ goal, onEdit, onDelete, onUpdateProgress }) => {
 
           <div className="flex justify-between">
             <span className="text-muted-foreground">Target Date</span>
-            <span>{format(new Date(goal.deadline), 'MMM d, yyyy')}</span>
+            <span>{formattedDate}</span>
           </div>
 
           {goal.note && (
@@ -103,10 +146,10 @@ const GoalCard = ({ goal, onEdit, onDelete, onUpdateProgress }) => {
           )}
         </div>
       </CardContent>
-      <CardFooter className="px-6 py-4 bg-primary-50">
+      <CardFooter className="px-6 py-4 bg-primary-100">
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="w-full gap-2">
+            <Button className="w-full gap-2 cursor-pointer" variant="outline">
               <Plus size={16} />
               Add Progress
             </Button>
@@ -128,7 +171,7 @@ const GoalCard = ({ goal, onEdit, onDelete, onUpdateProgress }) => {
                   onChange={(e) => setProgressAmount(e.target.value)}
                 />
               </div>
-              <Button className="w-full" onClick={handleProgressUpdate}>
+              <Button className="w-full cursor-pointer" onClick={handleProgressUpdate}>
                 Add to Goal
               </Button>
             </div>

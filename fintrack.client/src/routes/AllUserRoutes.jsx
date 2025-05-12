@@ -20,11 +20,15 @@ import NotFound from "../pages/Not Found/NotFound";
 import Reports from "../pages/User/Reports";
 import Transactions from "../pages/User/Transactions";
 import Goals from "../pages/User/Goals";
+import Login from "../pages/User/Login";
+import Register from "../pages/User/Register";
 
 
 function AllUserRoutes() {
   return (
     <Routes>
+      
+
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<Categories />} />
@@ -33,6 +37,8 @@ function AllUserRoutes() {
         <Route path="/goals" element={<Goals />} />
         <Route path="*" element={<NotFound />} />
       </Route>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
     </Routes>
   );
 }

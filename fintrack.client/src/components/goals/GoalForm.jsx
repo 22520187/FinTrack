@@ -5,7 +5,8 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Calendar } from '../ui/calendar';
+import { DatePicker } from 'antd';
+import dayjs from 'dayjs';
 import {
   Form,
   FormControl,
@@ -16,11 +17,6 @@ import {
 } from '../ui/form';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../ui/popover';
 import { cn } from "../../lib/utils"
 
 // Form validation schema
@@ -116,35 +112,16 @@ const GoalForm = ({ onSubmit, initialValues, mode = 'create' }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Target Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormControl>
+                  <DatePicker 
+                    className="w-full" 
+                    format="MMM D, YYYY"
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date) => field.onChange(date ? date.toDate() : null)}
+                    disabledDate={(current) => current && current < dayjs().startOf('day')}
+                    placeholder="Select target date"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -183,7 +160,7 @@ const GoalForm = ({ onSubmit, initialValues, mode = 'create' }) => {
           )}
         />
         
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full cursor-pointer">
           {mode === 'create' ? 'Create Goal' : 'Update Goal'}
         </Button>
       </form>

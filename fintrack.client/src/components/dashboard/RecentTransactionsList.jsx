@@ -17,7 +17,7 @@ const RecentTransactionsList = ({ transactions, onViewAll }) => {
             <CardTitle>Recent Transactions</CardTitle>
             <CardDescription>Your latest financial activity</CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={onViewAll}>
+          <Button variant="outline" size="sm" onClick={onViewAll} className="cursor-pointer">
             View All
           </Button>
         </div>
@@ -29,14 +29,14 @@ const RecentTransactionsList = ({ transactions, onViewAll }) => {
               <li key={transaction.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-full ${
-                    transaction.type === 'expense' ? 'bg-finance-expense/10' : 'bg-finance-income/10'
-                  }`}>
-                    {transaction.type === 'expense' ? (
-                      <ArrowDown className="h-4 w-4 text-finance-expense" />
-                    ) : (
-                      <ArrowUp className="h-4 w-4 text-finance-income" />
-                    )}
-                  </div>
+                  transaction.type === 'expense' ? 'bg-red-500/20' : 'bg-green-500/20'
+                }`}>
+                  {transaction.type === 'expense' ? (
+                    <ArrowDown className="h-4 w-4 text-red-600" />
+                  ) : (
+                    <ArrowUp className="h-4 w-4 text-green-600" />
+                  )}
+                </div>
                   <div>
                     <p className="font-medium">{transaction.category}</p>
                     <p className="text-xs text-muted-foreground">

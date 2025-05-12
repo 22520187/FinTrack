@@ -158,7 +158,7 @@ const Transactions = () => {
         <h1 className="text-3xl font-bold mb-4 sm:mb-0">Transactions</h1>
         <Dialog>
           <DialogTrigger asChild>
-            <Button>Add Transaction</Button>
+            <Button className="cursor-pointer">Add Transaction</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -182,7 +182,7 @@ const Transactions = () => {
             <SelectTrigger>
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent >
               <SelectItem value="all">All Transactions</SelectItem>
               <SelectItem value="income">Income Only</SelectItem>
               <SelectItem value="expense">Expenses Only</SelectItem>

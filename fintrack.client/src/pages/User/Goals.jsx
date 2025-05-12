@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Target, Trophy } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { 
@@ -8,7 +8,7 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from '../../components/ui/dialog';
-import { useToast } from '../../hooks/use-toast';
+import { toast } from '../../hooks/use-toast';
 import GoalCard from '../../components/goals/GoalCard';
 import GoalForm from '../../components/goals/GoalForm';
 
@@ -46,67 +46,112 @@ const mockGoals = [
 ];
 
 const Goals = () => {
-  const [goals, setGoals] = useState(mockGoals);
-  const [editingGoal, setEditingGoal] = useState(null);
+  const [goals, setGoals] = useState([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const [editingGoal, setEditingGoal] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAddGoal = (newGoal) => {
+  // Use useCallback for handlers to prevent unnecessary re-renders
+  const handleAddGoal = useCallback((newGoal) => {
+    // Generate a unique ID for the new goal
     const goalWithId = {
       ...newGoal,
       id: Date.now().toString(),
-      createdAt: new Date()
+      createdAt: new Date(),
+      currentAmount: 0
     };
     
-    setGoals(prev => [goalWithId, ...prev]);
+    setGoals(prev => [...prev, goalWithId]);
+    setIsAddDialogOpen(false);
     
     toast({
       title: "Goal created",
-      description: "Your financial goal has been created successfully."
+      description: "Your new goal has been added successfully."
     });
-  };
+  }, []);
 
-  const handleEditGoal = (id) => {
+  const handleEditGoal = useCallback((id) => {
     const goal = goals.find(g => g.id === id);
     if (goal) {
       setEditingGoal(goal);
       setIsEditDialogOpen(true);
     }
-  };
+  }, [goals]);
 
-  const handleUpdateGoal = (updatedGoal) => {
-    setGoals(prev => 
-      prev.map(g => g.id === editingGoal.id ? { ...updatedGoal, id: g.id, createdAt: g.createdAt } : g)
-    );
+  const handleUpdateGoal = useCallback((updatedGoal) => {
+    if (!editingGoal) return;
     
-    setIsEditDialogOpen(false);
-    setEditingGoal(null);
-    
-    toast({
-      title: "Goal updated",
-      description: "Your changes have been saved successfully."
-    });
-  };
+    try {
+      setGoals(prev => 
+        prev.map(g => g.id === editingGoal.id ? { 
+          ...updatedGoal, 
+          id: g.id, 
+          createdAt: g.createdAt,
+          // Ensure deadline is properly handled
+          deadline: updatedGoal.deadline instanceof Date ? 
+            updatedGoal.deadline : 
+            new Date(updatedGoal.deadline)
+        } : g)
+      );
+      
+      setIsEditDialogOpen(false);
+      setEditingGoal(null);
+      
+      toast({
+        title: "Goal updated",
+        description: "Your changes have been saved successfully."
+      });
+    } catch (error) {
+      console.error("Error updating goal:", error);
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: "There was a problem updating your goal."
+      });
+    }
+  }, [editingGoal]);
 
-  const handleDeleteGoal = (id) => {
-    setGoals(prev => prev.filter(g => g.id !== id));
-    
-    toast({
-      title: "Goal deleted",
-      description: "The goal has been removed."
-    });
-  };
+  const handleDeleteGoal = useCallback((id) => {
+    try {
+      setGoals(prev => prev.filter(g => g.id !== id));
+      
+      toast({
+        title: "Goal deleted",
+        description: "The goal has been removed."
+      });
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+      toast({
+        variant: "destructive",
+        title: "Delete failed",
+        description: "There was a problem deleting your goal."
+      });
+    }
+  }, []);
 
-  const handleUpdateProgress = (id, amount) => {
-    setGoals(prev => 
-      prev.map(g => g.id === id ? { ...g, currentAmount: Math.min(g.targetAmount, g.currentAmount + amount) } : g)
-    );
-    
-    toast({
-      title: "Progress updated",
-      description: `Added $${amount} to your goal progress.`
-    });
-  };
+  const handleUpdateProgress = useCallback((id, amount) => {
+    try {
+      setGoals(prev => 
+        prev.map(g => g.id === id ? { 
+          ...g, 
+          currentAmount: Math.min(g.targetAmount, g.currentAmount + amount) 
+        } : g)
+      );
+      
+      toast({
+        title: "Progress updated",
+        description: `Added $${amount} to your goal progress.`
+      });
+    } catch (error) {
+      console.error("Error updating progress:", error);
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: "There was a problem updating your progress."
+      });
+    }
+  }, []);
 
   return (
     <div>
@@ -114,7 +159,7 @@ const Goals = () => {
         <h1 className="text-3xl font-bold mb-4 sm:mb-0">Financial Goals</h1>
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2 cursor-pointer">
               <Target size={18} />
               Create New Goal
             </Button>

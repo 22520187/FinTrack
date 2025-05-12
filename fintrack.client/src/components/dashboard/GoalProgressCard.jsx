@@ -24,7 +24,7 @@ const GoalProgressCard = ({ goals }) => {
           size="sm" 
           variant="outline" 
           onClick={() => navigate('/goals')}
-          className="text-xs"
+          className="text-xs cursor-pointer"
         >
           View All
         </Button>
@@ -50,7 +50,7 @@ const GoalProgressCard = ({ goals }) => {
             
             <Button 
               variant="outline" 
-              className="w-full mt-2 gap-2" 
+              className="w-full mt-2 gap-2 cursor-pointer" 
               size="sm"
               onClick={() => navigate('/goals')}
             >
