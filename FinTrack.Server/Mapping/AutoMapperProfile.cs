@@ -1,7 +1,6 @@
 using AutoMapper;
 using FinTrack.Server.Models.Domain;
-
-
+using FinTrack.Server.Models.ResponseModels;
 
 namespace HealthBuddy.Server.Mapping
 {
@@ -9,7 +8,7 @@ namespace HealthBuddy.Server.Mapping
     {
         public AutoMapperProfile()
         {
-            
+            CreateMap<User, UserDto>();
         }
     }
 }
