@@ -21,15 +21,28 @@ namespace FinTrack.Server.Controllers
             _mapper = mapper;
         }
 
-        [HttpPost]
+        [Authorize] 
+        [HttpPost("create")]
         public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] CreateTransactionDTO createTransactionDto)
         {
+
+            var userIdClaim = HttpContext.User.FindFirst("UserId"); 
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized("UserId is missing in the token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value); // Convert to int
+
             if (createTransactionDto == null)
             {
                 return BadRequest("Transaction data is required.");
             }
 
             var transaction = _mapper.Map<Transaction>(createTransactionDto);
+            transaction.UserId = userId
+
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
 
             var transactionResponse = _mapper.Map<TransactionDTO>(createdTransaction);
@@ -38,20 +51,41 @@ namespace FinTrack.Server.Controllers
 
         }
 
-        [HttpGet("all/{UserId}")]
-        public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetAllTransactionByUserId(int UserId)
+        [Authorize] 
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetAllTransactionByUserId()
         {
-            var transactionListByUserId = await _transactionRepository.GetByUserIdAsync(UserId);
+
+            var userIdClaim = HttpContext.User.FindFirst("UserId"); 
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized("UserId is missing in the token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value); // Convert to int
+
+            var transactionListByUserId = await _transactionRepository.GetByUserIdAsync(userId);
             var transactionListResponse = _mapper.Map<IEnumerable<TransactionDTO>>(transactionListByUserId);
 
             return Ok(transactionListResponse);
 
         }
 
+        [Authorize] // Ensures only authenticated users can access this endpoint
         [HttpGet("all/{CategoryName}")]
-        public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactionsByCategoryName(string CategoryName, [FromBody] int UserId)
+        public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactionsByCategoryName(string CategoryName)
         {
-            var transactionListByCategoryName = await _transactionRepository.GetTransactionsByCategoryNameAsync(CategoryName, UserId);
+            var userIdClaim = HttpContext.User.FindFirst("UserId"); // Extract UserId from JWT
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized("UserId is missing in the token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value); // Convert to int
+
+            var transactionListByCategoryName = await _transactionRepository.GetTransactionsByCategoryNameAsync(CategoryName, userId);
             var transactionListResponse = _mapper.Map<IEnumerable<TransactionDTO>>(transactionListByCategoryName);
 
             return Ok(transactionListResponse);
