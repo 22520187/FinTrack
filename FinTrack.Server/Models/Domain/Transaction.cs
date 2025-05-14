@@ -19,6 +19,8 @@ public partial class Transaction
 
     public bool? IsImportant { get; set; }
 
+    public string? CategoryName { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public virtual Category? Category { get; set; }
