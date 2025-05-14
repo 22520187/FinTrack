@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FinTrack.Server.Models.DTO;
 using FinTrack.Server.Models.Domain;
-
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace FinTrack.Server.Controllers
 {
@@ -26,14 +27,13 @@ namespace FinTrack.Server.Controllers
         public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CreateCategoryDTO CreateCategoryDto)
         {
 
-            var userIdClaim = HttpContext.User.FindFirst("UserId"); // Extract UserId from JWT
-
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("UserId is missing in the token.");
             }
 
-            int userId = int.Parse(userIdClaim.Value); // Convert to int
+            int userId = int.Parse(userIdClaim.Value);
 
             if (CreateCategoryDto == null)
             {
@@ -53,18 +53,17 @@ namespace FinTrack.Server.Controllers
 
         [Authorize]
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAllCategoryByUserId(int UserId)
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAllCategoryByUserId()
         {
 
-            var userIdClaim = HttpContext.User.FindFirst("UserId"); // Extract UserId from JWT
-
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("UserId is missing in the token.");
             }
 
-            int userId = int.Parse(userIdClaim.Value); // Convert to int
-
+            int userId = int.Parse(userIdClaim.Value);
+            Console.WriteLine("userIdClaim",userIdClaim);
             var categoryListByUserId = await _categoryRepository.GetByUserIdAsync(userId);
             var categoryListResponse = _mapper.Map<IEnumerable<CategoryDTO>>(categoryListByUserId);
 
@@ -77,14 +76,13 @@ namespace FinTrack.Server.Controllers
         public async Task<ActionResult> GetTotalSpentOnCategory(string CategoryName, [FromQuery] string Type)
         {
 
-            var userIdClaim = HttpContext.User.FindFirst("UserId"); // Extract UserId from JWT
-
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("UserId is missing in the token.");
             }
 
-            int userId = int.Parse(userIdClaim.Value); // Convert to int
+            int userId = int.Parse(userIdClaim.Value);
 
             var totalAmount = await _categoryRepository.GetTotalSpentAsync(CategoryName, Type, userId);
 
@@ -101,14 +99,13 @@ namespace FinTrack.Server.Controllers
         public async Task<ActionResult> DeleteCategory(string CategoryName, [FromQuery] string Type)
         {
 
-            var userIdClaim = HttpContext.User.FindFirst("UserId"); // Extract UserId from JWT
-
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("UserId is missing in the token.");
             }
 
-            int userId = int.Parse(userIdClaim.Value); // Convert to int
+            int userId = int.Parse(userIdClaim.Value);
 
             var deleted = await _categoryRepository.DeleteAsync(
                 t => t.CategoryName == CategoryName && t.Type == Type && t.UserId == userId

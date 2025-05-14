@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FinTrack.Server.Models.DTO;
 using FinTrack.Server.Models.Domain;
-
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace FinTrack.Server.Controllers
 {
@@ -26,14 +27,13 @@ namespace FinTrack.Server.Controllers
         public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] CreateTransactionDTO createTransactionDto)
         {
 
-            var userIdClaim = HttpContext.User.FindFirst("UserId"); 
-
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("UserId is missing in the token.");
             }
 
-            int userId = int.Parse(userIdClaim.Value); // Convert to int
+            int userId = int.Parse(userIdClaim.Value);
 
             if (createTransactionDto == null)
             {
@@ -41,7 +41,7 @@ namespace FinTrack.Server.Controllers
             }
 
             var transaction = _mapper.Map<Transaction>(createTransactionDto);
-            transaction.UserId = userId
+            transaction.UserId = userId;
 
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
 
@@ -56,14 +56,13 @@ namespace FinTrack.Server.Controllers
         public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetAllTransactionByUserId()
         {
 
-            var userIdClaim = HttpContext.User.FindFirst("UserId"); 
-
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("UserId is missing in the token.");
             }
 
-            int userId = int.Parse(userIdClaim.Value); // Convert to int
+            int userId = int.Parse(userIdClaim.Value);
 
             var transactionListByUserId = await _transactionRepository.GetByUserIdAsync(userId);
             var transactionListResponse = _mapper.Map<IEnumerable<TransactionDTO>>(transactionListByUserId);
@@ -76,14 +75,13 @@ namespace FinTrack.Server.Controllers
         [HttpGet("all/{CategoryName}")]
         public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactionsByCategoryName(string CategoryName)
         {
-            var userIdClaim = HttpContext.User.FindFirst("UserId"); // Extract UserId from JWT
-
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("UserId is missing in the token.");
             }
 
-            int userId = int.Parse(userIdClaim.Value); // Convert to int
+            int userId = int.Parse(userIdClaim.Value);
 
             var transactionListByCategoryName = await _transactionRepository.GetTransactionsByCategoryNameAsync(CategoryName, userId);
             var transactionListResponse = _mapper.Map<IEnumerable<TransactionDTO>>(transactionListByCategoryName);

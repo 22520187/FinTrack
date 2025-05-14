@@ -74,42 +74,33 @@ namespace FinTrack.Server.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
+        public async Task<ActionResult> Login(LoginRequest request)
         {
             // Find user by email
             var user = await _userRepository.GetByIdAsync(u => u.Email == request.Email);
-            if (user == null)
+            if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
             {
-                return Unauthorized(new AuthResponse
-                {
-                    Success = false,
-                    Message = "Invalid email or password"
-                });
+                return Unauthorized("Invalid email or password");
             }
 
-            // Verify password
-            if (!VerifyPassword(request.Password, user.PasswordHash))
-            {
-                return Unauthorized(new AuthResponse
-                {
-                    Success = false,
-                    Message = "Invalid email or password"
-                });
-            }
 
-            // Create token
             var token = _tokenService.CreateToken(user);
 
-            // Map user to DTO
-            var userDto = _mapper.Map<UserDto>(user);
+            // Store token in HTTP-only cookie
+            Response.Cookies.Append("AuthToken", token, new CookieOptions
+            {
+                HttpOnly = true, // Prevents JavaScript access
+                Secure = false,  
+                SameSite = SameSiteMode.None, // Adjust based on frontend needs
+                Expires = DateTime.UtcNow.AddDays(7) // Token expiration
+            });
 
-            // Return response
+            // Return success response without exposing the token
             return Ok(new AuthResponse
             {
                 Success = true,
                 Message = "Login successful",
-                Token = token,
-                User = userDto
+                User = _mapper.Map<UserDto>(user) // Send user details, but NOT the token
             });
         }
 

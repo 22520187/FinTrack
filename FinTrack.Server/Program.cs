@@ -5,6 +5,7 @@ using FinTrack.Server.Repositories;
 using FinTrack.Server.Repositories.Implement;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Text;
 
 
@@ -65,6 +66,15 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddCookie(options =>
+{
+    options.Cookie.HttpOnly = true; // ✅ Enable HTTP-only cookies
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ✅ Use HTTPS only
+    options.Cookie.SameSite = SameSiteMode.None; // Adjust based on CORS settings
+    options.Cookie.IsEssential = true; // Ensure the cookie isn't blocked by privacy settings
+    options.LoginPath = "/api/auth/login"; // Redirect unauthorized users to login
+    options.LogoutPath = "/api/auth/logout";
 })
 .AddJwtBearer(options =>
 {
