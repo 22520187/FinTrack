@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using FinTrack.Server.Models;
 using FinTrack.Server.Repositories;
 using FinTrack.Server.Repositories.Implement;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,10 +22,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins", builder =>
     {
-        builder.WithOrigins("https://localhost:3000", "https://fintrack.netlify.app") // Cho phép cả hai domain
-               .AllowAnyHeader()
-               .AllowAnyMethod()
-               .AllowCredentials();
+        builder.WithOrigins(
+                "https://localhost:3000", 
+                "https://fintrack.netlify.app",
+                "http://localhost:5131",  // Add HTTP localhost
+                "https://localhost:5173", // Add client dev server
+                "http://localhost:5173"   // Add HTTP version too
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -35,7 +44,7 @@ builder.Services.AddScoped<IGoalProgressRepository, SQLGoalProgressRepository>()
 builder.Services.AddScoped<IReportRepository, SQLReportRepository>();
 builder.Services.AddScoped<ITransactionRepository, SQLTransactionRepository>();
 builder.Services.AddScoped<IUserRepository, SQLUserRepository>();
-
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 
 builder.Services.AddScoped(typeof(IFinTrackRepository<>), typeof(FinTrackRepository<>));
@@ -45,6 +54,26 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 builder.Services.AddMemoryCache();
 
+// Add JWT configuration
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "FinTrack",
+        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "FinTrackUsers",
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "FinTrackDefaultSecretKey12345678901234567890"))
+    };
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -67,6 +96,7 @@ app.UseCors("AllowSpecificOrigins");
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

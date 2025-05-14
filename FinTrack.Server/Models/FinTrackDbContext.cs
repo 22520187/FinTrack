@@ -188,6 +188,10 @@ public partial class FinTrackDbContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.FullName).HasMaxLength(255);
             entity.Property(e => e.PasswordHash).HasMaxLength(512);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.District).HasMaxLength(100);
+            entity.Property(e => e.Ward).HasMaxLength(100);
         });
 
         OnModelCreatingPartial(modelBuilder);
