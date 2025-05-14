@@ -2,7 +2,7 @@ using AutoMapper;
 using FinTrack.Server.Models.Domain;
 using FinTrack.Server.Models.DTO;
 using BCrypt.Net;
-
+using FinTrack.Server.Models.ResponseModels;
 
 
 namespace HealthBuddy.Server.Mapping
@@ -11,6 +11,7 @@ namespace HealthBuddy.Server.Mapping
     {
         public AutoMapperProfile()
         {
+
             CreateMap<Transaction, TransactionDTO>();
             CreateMap<TransactionDTO, Transaction>();
 
@@ -29,6 +30,8 @@ namespace HealthBuddy.Server.Mapping
 
             CreateMap<Category, CategoryDTO>();
             CreateMap<CategoryDTO, Category>();
+            CreateMap<User, UserDto>();
+
         }
     }
 }

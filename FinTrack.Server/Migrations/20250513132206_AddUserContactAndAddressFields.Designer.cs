@@ -4,6 +4,7 @@ using FinTrack.Server.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinTrack.Server.Migrations
 {
     [DbContext(typeof(FinTrackDbContext))]
-    partial class FinTrackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250513132206_AddUserContactAndAddressFields")]
+    partial class AddUserContactAndAddressFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,13 +254,6 @@ namespace FinTrack.Server.Migrations
                         .HasColumnType("int")
                         .HasColumnName("CategoryID");
 
-
-                    b.Property<string>("CategoryName")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("CategoryName");
-
-
-
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -302,7 +298,6 @@ namespace FinTrack.Server.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -327,8 +322,6 @@ namespace FinTrack.Server.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
-
-
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -336,7 +329,6 @@ namespace FinTrack.Server.Migrations
                     b.Property<string>("Ward")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
 
                     b.HasKey("UserId")
                         .HasName("PK__Users__1788CCAC6826032B");

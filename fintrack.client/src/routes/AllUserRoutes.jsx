@@ -20,6 +20,7 @@ import NotFound from "../pages/Not Found/NotFound";
 import Reports from "../pages/User/Reports";
 import Transactions from "../pages/User/Transactions";
 import Goals from "../pages/User/Goals";
+import Settings from "../pages/User/Settings";
 import Login from "../pages/User/Login";
 import Register from "../pages/User/Register";
 
@@ -27,7 +28,7 @@ import Register from "../pages/User/Register";
 function AllUserRoutes() {
   return (
     <Routes>
-      
+
 
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
@@ -35,6 +36,7 @@ function AllUserRoutes() {
         <Route path="/reports" element={<Reports />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/goals" element={<Goals />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="/login" element={<Login />} />

@@ -197,7 +197,7 @@ const Categories = () => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-primary-900 dark:text-primary-100">Categories</h1>
+        <h1 className="text-3xl font-bold mb-4 sm:mb-0">Categories</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="cursor-pointer">Add Category</Button>

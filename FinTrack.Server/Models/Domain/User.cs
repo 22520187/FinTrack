@@ -15,6 +15,14 @@ public partial class User
 
     public DateTime? CreatedAt { get; set; }
 
+    public string? Phone { get; set; }
+
+    public string? City { get; set; }
+
+    public string? District { get; set; }
+
+    public string? Ward { get; set; }
+
     public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
 
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
