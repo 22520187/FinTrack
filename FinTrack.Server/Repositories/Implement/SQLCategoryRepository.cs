@@ -8,6 +8,15 @@ namespace FinTrack.Server.Repositories.Implement
     {
         public SQLCategoryRepository(FinTrackDbContext dbContext) : base(dbContext)
         {
+
         }
+
+        public async Task<decimal> GetTotalSpentAsync(string categoryName, string type, int userId)
+        {
+            return await dbContext.Transactions
+                .Where(t => t.CategoryName == categoryName && t.Type == type && t.UserId == userId)
+                .SumAsync(t => t.Amount);
+        }
+
     }
 }

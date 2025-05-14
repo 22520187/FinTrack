@@ -4,6 +4,12 @@ using FinTrack.Server.Models;
 using FinTrack.Server.Repositories;
 using FinTrack.Server.Repositories.Implement;
 
+
+// using var context = new FinTrackDbContext();
+
+// var seeder = new UserSeeder(context);
+// seeder.InsertUser();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -51,10 +57,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
+
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

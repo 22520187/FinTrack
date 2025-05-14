@@ -17,6 +17,8 @@ namespace FinTrack.Server.Repositories.Implement
         }
         public async Task<T> CreateAsync(T dbRecord)
         {
+            var sql = dbContext.ChangeTracker.DebugView.LongView;
+
             await _dbSet.AddAsync(dbRecord);
             await dbContext.SaveChangesAsync();
             return dbRecord;
@@ -55,6 +57,11 @@ namespace FinTrack.Server.Repositories.Implement
 
             await dbContext.SaveChangesAsync();
             return existingRecord;
+        }
+
+        public async Task<List<T>> GetByUserIdAsync(int userId)
+        {
+            return await _dbSet.Where(entity => EF.Property<int>(entity, "UserId") == userId).ToListAsync();
         }
     }
 }
