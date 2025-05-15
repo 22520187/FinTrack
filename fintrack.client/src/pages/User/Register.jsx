@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 import LeftPanel from "../../components/Auth/LeftPanel";
 import RightPanel from "../../components/Auth/RightPanel";
+import authService from "../../services/auth.service";
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -15,10 +16,10 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  
+
   const handleRegister = async (e) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
         variant: "destructive",
@@ -27,19 +28,35 @@ const Register = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
       // Here you would connect to authentication service
       // For now we just simulate registration
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const data = {
+        "email": email,
+        "password": password,
+        "fullName": name
+      }
+
+      const response = await authService.signUp(data);
+
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to register account",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
+
+
       toast({
         title: "Registration successful",
         description: "Welcome to MoneyMind! You can now log in.",
       });
-      
+
       // Redirect to login
       window.location.href = '/login';
     } catch (error) {
@@ -52,10 +69,10 @@ const Register = () => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="h-screen w-full flex relative">
-      
+
       {/* LeftPanel */}
       <motion.div
         className="w-1/2 bg-primary-100 flex items-center justify-center h-full"

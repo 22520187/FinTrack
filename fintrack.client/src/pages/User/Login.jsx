@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useToast } from "../../hooks/use-toast";
 import LeftPanel from "../../components/Auth/LeftPanel";
 import RightPanel from "../../components/Auth/RightPanel";
+import authService from "../../services/auth.service";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +21,22 @@ const Login = () => {
     try {
       // Here you would connect to authentication service
       // For now we just simulate a login
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const data = {
+        "email": email,
+        "password": password
+      }
+
+      const response = await authService.signIn(data);
+
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to sign in account",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
       
       toast({
         title: "Login successful",

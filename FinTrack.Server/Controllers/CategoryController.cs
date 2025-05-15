@@ -23,7 +23,7 @@ namespace FinTrack.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CreateCategoryDTO CreateCategoryDto)
         {
 
@@ -41,8 +41,8 @@ namespace FinTrack.Server.Controllers
             }
 
             var CreateCategory = _mapper.Map<Category>(CreateCategoryDto);
+            CreateCategory.UserId = userId;
             var createdCategory = await _categoryRepository.CreateAsync(CreateCategory);
-            createdCategory.UserId = userId;
 
             var CreateCategoryResponse = _mapper.Map<CreateCategoryDTO>(createdCategory);
 
@@ -55,7 +55,6 @@ namespace FinTrack.Server.Controllers
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAllCategoryByUserId()
         {
-
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
@@ -63,13 +62,29 @@ namespace FinTrack.Server.Controllers
             }
 
             int userId = int.Parse(userIdClaim.Value);
-            Console.WriteLine("userIdClaim",userIdClaim);
+
             var categoryListByUserId = await _categoryRepository.GetByUserIdAsync(userId);
-            var categoryListResponse = _mapper.Map<IEnumerable<CategoryDTO>>(categoryListByUserId);
+
+            var categoryListResponse = new List<CategoryDTO>();
+
+            foreach (var category in categoryListByUserId)
+            {
+                var totalSpent = await _categoryRepository.GetTotalSpentAsync(category.CategoryName, category.Type, userId);
+
+                var categoryDto = new CategoryDTO
+                {
+                    CategoryName = category.CategoryName,
+                    Type = category.Type,
+                    IsDefault = category.IsDefault,
+                    TotalSpentAmount = (float?)totalSpent
+                };
+
+                categoryListResponse.Add(categoryDto);
+            }
 
             return Ok(categoryListResponse);
-
         }
+
 
         [Authorize]
         [HttpGet("total/{CategoryName}")]

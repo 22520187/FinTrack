@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import {
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../components/ui/select';
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -27,131 +27,199 @@ import {
 } from "../../components/ui/alert-dialog";
 import TransactionCard from '../../components/transactions/TransactionCard';
 import TransactionForm from '../../components/transactions/TransactionForm';
+import transactionService from '../../services/transaction.service'
 import { useToast } from '../../hooks/use-toast';
+import categoryService from '../../services/category.service'
+import { useSearchParams } from 'react-router-dom';
 
-// Mock data
-const mockTransactions = [
-  {
-    id: '1',
-    amount: 2500,
-    type: 'income',
-    category: 'Salary',
-    note: 'Monthly salary',
-    timestamp: new Date(2023, 4, 1)
-  },
-  {
-    id: '2',
-    amount: 120,
-    type: 'expense',
-    category: 'Food',
-    note: 'Grocery shopping',
-    timestamp: new Date(2023, 4, 3)
-  },
-  {
-    id: '3',
-    amount: 45,
-    type: 'expense',
-    category: 'Transport',
-    timestamp: new Date(2023, 4, 5)
-  },
-  {
-    id: '4',
-    amount: 200,
-    type: 'expense',
-    category: 'Entertainment',
-    note: 'Movie night with friends',
-    timestamp: new Date(2023, 4, 10)
-  },
-  {
-    id: '5',
-    amount: 500,
-    type: 'income',
-    category: 'Freelance',
-    note: 'Website project',
-    timestamp: new Date(2023, 4, 15)
-  },
-];
 
 const Transactions = () => {
-  const [transactions, setTransactions] = useState(mockTransactions);
+  const [categories, setCategories] = useState();
+  const [filteredCategorieType, setFilteredCategorieType] = useState("")
+  const [transactions, setTransactions] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const isFirstMounted = useRef(true)
+  const didSetFromParam = useRef(false);
   const { toast } = useToast();
+  const [params] = useSearchParams()
+
+  useEffect(() => {
+    if (params.get("categoryName")) {
+      setFilteredCategorieType(params.get("categoryName"))
+      setSearchQuery(params.get("categoryName"))
+      didSetFromParam.current = true;
+    }
+
+
+  }, [])
+
+  useEffect(() => {
+    if (isFirstMounted.current) {
+      isFirstMounted.current = false;
+      return;
+    }
+
+    if (filterType === 'all') {
+
+      if (didSetFromParam.current) {
+        didSetFromParam.current = false; // reset this flag for future
+        return;
+      }
+
+      setSearchQuery("");
+    }
+
+  }, [filterType]);
+
+  useEffect(() => {
+    const getCategory = async () => {
+      const response = await categoryService.getAllCategory()
+
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to get category",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
+
+      const categories = response.data
+
+      setCategories(categories)
+    }
+
+    getCategory()
+  }, [])
+  useEffect(() => {
+    const getAllTransaction = async () => {
+      const response = await transactionService.getAllTransaction()
+
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to get transaction",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
+
+      const transactions = response.data
+      if (params.get("categoryName")) {
+        setFilteredCategorieType(params.get("categoryName"))
+
+      }
+      setTransactions(transactions)
+    }
+
+    getAllTransaction()
+  }, [])
 
   const filteredTransactions = transactions.filter(transaction => {
-    // Apply type filter
+    console.log("transactions", transactions)
+    // Filter by type
     if (filterType !== 'all' && transaction.type !== filterType) {
       return false;
     }
-    
+
     // Apply search filter (case insensitive)
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
+      if (!transaction.categoryName) return false
       return (
-        transaction.category.toLowerCase().includes(query) ||
+        transaction.categoryName.toLowerCase().includes(query) ||
         (transaction.note && transaction.note.toLowerCase().includes(query))
       );
     }
-    
+
     return true;
   });
-  
-  const handleAddTransaction = (newTransaction) => {
-    const transactionWithId = {
-      ...newTransaction,
-      id: Date.now().toString(),
-    };
-    
-    setTransactions(prev => [transactionWithId, ...prev]);
-    
+
+  const handleAddTransaction = async (newTransaction) => {
+    console.log("newTransaction", newTransaction);
+
+    const response = await transactionService.createTransaction(newTransaction)
+
+    if (response.status !== 200) {
+      toast({
+        variant: "destructive",
+        title: "Fail to sign in account",
+        description: "Please make sure your information is correct.",
+      });
+      return;
+    }
+    setTransactions(prev => [newTransaction, ...prev]);
+
     toast({
       title: "Transaction added",
       description: `Your ${newTransaction.type} has been recorded successfully.`,
     });
   };
-  
+
   const handleEditTransaction = (id) => {
-    const transaction = transactions.find(t => t.id === id);
+    console.log("id",id)
+    const transaction = transactions.find(t => t.transactionId === id);
     if (transaction) {
       setEditingTransaction(transaction);
       setIsEditDialogOpen(true);
     }
   };
-  
-  const handleUpdateTransaction = (updatedTransaction) => {
-    setTransactions(prev => 
+
+  const handleUpdateTransaction = async (updatedTransaction) => {
+    console.log("editingTransaction",editingTransaction)
+    const response = await transactionService.updateTransaction(updatedTransaction, editingTransaction.transactionId)
+
+    if (response.status !== 200) {
+      toast({
+        variant: "destructive",
+        title: "Fail to edit account",
+        description: "Please make sure your information is correct.",
+      });
+      return;
+    }
+    setTransactions(prev =>
       prev.map(t => t.id === editingTransaction.id ? { ...updatedTransaction, id: t.id } : t)
     );
-    
+
     setIsEditDialogOpen(false);
     setEditingTransaction(null);
-    
+
     toast({
       title: "Transaction updated",
       description: "Your changes have been saved successfully.",
     });
   };
-  
+
   const handleDeleteTransaction = (id) => {
     setDeletingId(id);
   };
-  
-  const confirmDelete = () => {
+
+  const confirmDelete = async () => {
     if (deletingId) {
-      setTransactions(prev => prev.filter(t => t.id !== deletingId));
-      
+      setTransactions(prev => prev.filter(t => t.transactionId !== deletingId));
+      const response = await transactionService.deleteTransaction(deletingId)
+
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to delete transaction",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
       toast({
         title: "Transaction deleted",
         description: "The transaction has been removed.",
       });
-      
+
       setDeletingId(null);
     }
   };
-  
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -168,7 +236,7 @@ const Transactions = () => {
           </DialogContent>
         </Dialog>
       </div>
-      
+
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="w-full sm:w-2/3">
           <Input
@@ -190,12 +258,12 @@ const Transactions = () => {
           </Select>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTransactions.length > 0 ? (
           filteredTransactions.map(transaction => (
             <TransactionCard
-              key={transaction.id}
+              key={transaction.transactionId}
               transaction={transaction}
               onEdit={handleEditTransaction}
               onDelete={handleDeleteTransaction}
@@ -207,7 +275,7 @@ const Transactions = () => {
           </div>
         )}
       </div>
-      
+
       {/* Edit Transaction Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
@@ -223,7 +291,7 @@ const Transactions = () => {
           )}
         </DialogContent>
       </Dialog>
-      
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
         <AlertDialogContent>

@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { useEffect } from 'react';
+import categoryService from '../../services/category.service';
 
 // Mock categories
 const EXPENSE_CATEGORIES = ['Food', 'Transport', 'Housing', 'Entertainment', 'Shopping', 'Utilities', 'Health', 'Other'];
@@ -26,12 +28,33 @@ const TransactionForm = ({
   mode = 'create',
   className = ''
 }) => {
+  const [categories, setCategories] = useState(null);
   const [amount, setAmount] = useState(initialValues.amount);
   const [type, setType] = useState(initialValues.type);
-  const [category, setCategory] = useState(initialValues.category);
+  const [categoryName, setCategoryName] = useState(initialValues.category);
   const [note, setNote] = useState(initialValues.note || '');
 
-  const categories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  useEffect(() => {
+    const getCategory = async () => {
+      const response = await categoryService.getAllCategory()
+
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to get category",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
+
+      const categories = response.data
+      console.log("categories", categories);
+
+      setCategories(categories)
+    }
+
+    getCategory()
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,9 +67,9 @@ const TransactionForm = ({
     onSubmit({
       amount,
       type,
-      category,
+      categoryName,
       note: note.trim() !== '' ? note : undefined,
-      timestamp: new Date(),
+      createdAt: new Date(),
     });
 
     // Reset form if creating new transaction
@@ -88,7 +111,7 @@ const TransactionForm = ({
             </label>
             <div className="flex gap-2">
               <Button
-              
+
                 type="button"
                 variant={type === 'expense' ? 'destructive' : 'outline'}
                 className={type === 'expense'
@@ -96,7 +119,6 @@ const TransactionForm = ({
                   : 'mt-2 border-primary-200 hover:bg-primary-50 hover:text-primary-600 cursor-pointer'}
                 onClick={() => {
                   setType('expense');
-                  setCategory(EXPENSE_CATEGORIES[0]);
                 }}
               >
                 Expense
@@ -109,7 +131,6 @@ const TransactionForm = ({
                   : 'mt-2 border-primary-200 hover:bg-primary-50 hover:text-primary-600 cursor-pointer'}
                 onClick={() => {
                   setType('income');
-                  setCategory(INCOME_CATEGORIES[0]);
                 }}
               >
                 Income
@@ -121,16 +142,18 @@ const TransactionForm = ({
             <label className="text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="category">
               Category
             </label>
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={categoryName} onValueChange={setCategoryName}>
               <SelectTrigger className="mt-2 border-primary-200 dark:border-primary-700 cursor-pointer">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
+                {categories ? categories
+                  .filter(cat => cat.type === type)
+                  .map((cat) => (
+                  <SelectItem key={cat.categoryName + '-' + cat.type} value={cat.categoryName}>
+                    {cat.categoryName}
                   </SelectItem>
-                ))}
+                )) : ""}
               </SelectContent>
             </Select>
           </div>

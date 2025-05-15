@@ -9,5 +9,7 @@ namespace FinTrack.Server.Models.DTO
         public string? Type { get; set; }
 
         public bool? IsDefault { get; set; }
+
+        public float? TotalSpentAmount {get; set;}
     }
 }

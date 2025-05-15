@@ -90,7 +90,7 @@ namespace FinTrack.Server.Controllers
             Response.Cookies.Append("AuthToken", token, new CookieOptions
             {
                 HttpOnly = true, // Prevents JavaScript access
-                Secure = false,  
+                Secure = true,  
                 SameSite = SameSiteMode.None, // Adjust based on frontend needs
                 Expires = DateTime.UtcNow.AddDays(7) // Token expiration
             });

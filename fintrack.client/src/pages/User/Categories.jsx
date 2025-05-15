@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import {
@@ -34,26 +34,29 @@ import {
 } from '../../components/ui/alert-dialog';
 import { Edit, Trash2 } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
+import categoryService from '../../services/category.service';
+import { useNavigate } from 'react-router-dom';
 
 // Mock data
 const defaultCategories = [
-  { id: '1', name: 'Food', type: 'expense', isDefault: true },
-  { id: '2', name: 'Transport', type: 'expense', isDefault: true },
-  { id: '3', name: 'Housing', type: 'expense', isDefault: true },
-  { id: '4', name: 'Entertainment', type: 'expense', isDefault: true },
-  { id: '5', name: 'Shopping', type: 'expense', isDefault: true },
-  { id: '6', name: 'Utilities', type: 'expense', isDefault: true },
-  { id: '7', name: 'Health', type: 'expense', isDefault: true },
-  { id: '8', name: 'Salary', type: 'income', isDefault: true },
-  { id: '9', name: 'Freelance', type: 'income', isDefault: true },
-  { id: '10', name: 'Gift', type: 'income', isDefault: true },
-  { id: '11', name: 'Investment', type: 'income', isDefault: true },
-  { id: '12', name: 'Gym', type: 'expense', isDefault: false },
-  { id: '13', name: 'Pets', type: 'expense', isDefault: false },
-  { id: '14', name: 'Bonus', type: 'income', isDefault: false },
+  {categoryName: 'Food', type: 'expense', isDefault: true, totalSpentAmount:10 },
+  {categoryName: 'Transport', type: 'expense', isDefault: true, totalSpentAmount:0 },
+  {categoryName: 'Housing', type: 'expense', isDefault: true, totalSpentAmount:10 },
+  {categoryName: 'Entertainment', type: 'expense', isDefault: true, totalSpentAmount:0 },
+  {categoryName: 'Shopping', type: 'expense', isDefault: true, totalSpentAmount:0 },
+  {categoryName: 'Utilities', type: 'expense', isDefault: true, totalSpentAmount:0 },
+  {categoryName: 'Health', type: 'expense', isDefault: true, totalSpentAmount:0 },
+  {categoryName: 'Salary', type: 'income', isDefault: true, totalSpentAmount:10 },
+  {categoryName: 'Freelance', type: 'income', isDefault: true, totalSpentAmount:0 },
+  { categoryName: 'Gift', type: 'income', isDefault: true, totalSpentAmount:0 },
+  { categoryName: 'Investment', type: 'income', isDefault: true, totalSpentAmount:0 },
+  { categoryName: 'Gym', type: 'expense', isDefault: false, totalSpentAmount:0 },
+  { categoryName: 'Pets', type: 'expense', isDefault: false, totalSpentAmount:0 },
+  { categoryName: 'Bonus', type: 'income', isDefault: false, totalSpentAmount:0 },
 ];
 
 const Categories = () => {
+  
   const [categories, setCategories] = useState(defaultCategories);
   const [filterType, setFilterType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,24 +65,47 @@ const Categories = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(null);
+  const [deletingCategoryType, setDeletingCategoryType] = useState(null);
+
+  const nav = useNavigate()
   const { toast } = useToast();
-  
+
+  useEffect(()=> {
+    const getCategory = async () => {
+      const response = await categoryService.getAllCategory()
+
+      if(response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to get category",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
+
+      const categories = [...defaultCategories, ...response.data]
+      setCategories(categories)
+    }
+
+    getCategory()
+  },[])
+
   const filteredCategories = categories.filter(category => {
     // Apply type filter
     if (filterType !== 'all' && category.type !== filterType) {
       return false;
     }
-    
+
     // Apply search filter
     if (searchQuery.trim() !== '') {
-      return category.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return category.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
     }
-    
+
     return true;
   });
-  
-  const handleAddCategory = () => {
+
+  const handleAddCategory = async () => {
     if (newCategoryName.trim() === '') {
       toast({
         variant: "destructive",
@@ -88,9 +114,9 @@ const Categories = () => {
       });
       return;
     }
-    
+
     // Check if category name already exists
-    if (categories.some(cat => cat.name.toLowerCase() === newCategoryName.toLowerCase())) {
+    if (categories.some(cat => cat.categoryName.toLowerCase() === newCategoryName.toLowerCase())) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -98,35 +124,48 @@ const Categories = () => {
       });
       return;
     }
-    
+
     const newCategory = {
-      id: Date.now().toString(),
-      name: newCategoryName,
+      categoryName: newCategoryName,
       type: newCategoryType,
       isDefault: false,
     };
-    
+
+    const response = await categoryService.createCategory(newCategory)
+
+    if (response.status !== 200) {
+      toast({
+        variant: "destructive",
+        title: "Fail to create new category",
+        description: "Please make sure your information is correct.",
+      });
+      return;
+    }
     setCategories(prev => [...prev, newCategory]);
     setNewCategoryName('');
     setNewCategoryType('expense');
     setIsAddDialogOpen(false);
-    
+
     toast({
       title: "Category added",
       description: `The category "${newCategoryName}" has been created.`,
     });
   };
-  
+
+  const handleClickOnCategoryCard = (categoryName) => {
+    nav(`/transactions?categoryName=${categoryName}`)
+  }
+
   const handleEditCategory = (id) => {
     const category = categories.find(c => c.id === id);
     if (category) {
       setEditingCategory(category);
-      setNewCategoryName(category.name);
+      setNewCategoryName(category.categoryName);
       setNewCategoryType(category.type);
       setIsEditDialogOpen(true);
     }
   };
-  
+
   const handleUpdateCategory = () => {
     if (newCategoryName.trim() === '') {
       toast({
@@ -136,10 +175,10 @@ const Categories = () => {
       });
       return;
     }
-    
+
     // Check if category name already exists (excluding the current category)
-    if (categories.some(cat => 
-      cat.id !== editingCategory.id && 
+    if (categories.some(cat =>
+      cat.id !== editingCategory.id &&
       cat.name.toLowerCase() === newCategoryName.toLowerCase()
     )) {
       toast({
@@ -149,26 +188,26 @@ const Categories = () => {
       });
       return;
     }
-    
-    setCategories(prev => 
+
+    setCategories(prev =>
       prev.map(c => c.id === editingCategory.id ? {
         ...c,
         name: newCategoryName,
         type: newCategoryType
       } : c)
     );
-    
+
     setIsEditDialogOpen(false);
     setEditingCategory(null);
-    
+
     toast({
       title: "Category updated",
       description: "Your changes have been saved.",
     });
   };
-  
-  const handleDeleteCategory = (id) => {
-    const category = categories.find(c => c.id === id);
+
+  const handleDeleteCategory = (categoryName, type) => {
+    const category = categories.find(c => (c.categoryName === categoryName && c.type == type)) ;
     if (category?.isDefault) {
       toast({
         variant: "destructive",
@@ -177,23 +216,35 @@ const Categories = () => {
       });
       return;
     }
-    
-    setDeletingId(id);
+
+    setDeletingCategory(categoryName);
+    setDeletingCategoryType(type)
   };
-  
-  const confirmDelete = () => {
-    if (deletingId) {
-      setCategories(prev => prev.filter(c => c.id !== deletingId));
+
+  const confirmDelete = async () => {
+    if (deletingCategory && deletingCategoryType) {
+      setCategories(prev => prev.filter(c => !(c.categoryName == deletingCategory && c.type == deletingCategoryType)));
+
+      const response = await categoryService.deleteCategory(deletingCategory,deletingCategoryType)
+
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to delete",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
       
       toast({
         title: "Category deleted",
         description: "The category has been removed.",
       });
-      
+
       setDeletingId(null);
     }
   };
-  
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -233,7 +284,7 @@ const Categories = () => {
           </DialogContent>
         </Dialog>
       </div>
-      
+
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="w-full sm:w-2/3">
           <Input
@@ -255,35 +306,34 @@ const Categories = () => {
           </Select>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredCategories.map(category => (
-          <Card key={category.id} className={`${category.isDefault ? 'border-primary-200' : 'border-primary-400/30'} bg-white dark:bg-card-dark`}>
+          <Card onClick={()=>handleClickOnCategoryCard(category.categoryName)} key={category.id} className={`${category.isDefault ? 'border-primary-200' : 'border-primary-400/30'} bg-white dark:bg-card-dark`}>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex justify-between items-center text-primary-900 dark:text-primary-100">
-                {category.name}
-                <span className={`text-xs px-2 py-1 rounded ${
-                  category.type === 'expense' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                }`}>
+                {category.categoryName}
+                <span className={`text-xs px-2 py-1 rounded ${category.type === 'expense' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                  }`}>
                   {category.type}
                 </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-primary-600 dark:text-primary-300">
-                {category.isDefault ? 'Default Category' : 'Custom Category'}
+                {category.totalSpentAmount ? `Total amount spent: ${category.totalSpentAmount}` : ''}
               </p>
             </CardContent>
             <CardFooter className="pt-0">
               <div className="flex space-x-2 ml-auto">
-                <Button className= "cursor-pointer" variant="ghost" size="icon" onClick={() => handleEditCategory(category.id)}>
+                <Button className="cursor-pointer" variant="ghost" size="icon" onClick={() => handleEditCategory(category.id)}>
                   <Edit className="h-4 w-4" />
                 </Button>
-                <Button 
-                  className= "cursor-pointer"
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => handleDeleteCategory(category.id)}
+                <Button
+                  className="cursor-pointer"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDeleteCategory(category.categoryName, category.type)}
                   disabled={category.isDefault}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -292,14 +342,14 @@ const Categories = () => {
             </CardFooter>
           </Card>
         ))}
-        
+
         {filteredCategories.length === 0 && (
           <div className="col-span-full py-12 text-center">
             <p className="text-xl text-primary-600 dark:text-primary-300">No categories found</p>
           </div>
         )}
       </div>
-      
+
       {/* Edit Category Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
@@ -322,8 +372,8 @@ const Categories = () => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-primary-800 dark:text-primary-200">Category Type</label>
-              <Select 
-                value={newCategoryType} 
+              <Select
+                value={newCategoryType}
                 onValueChange={setNewCategoryType}
                 disabled={editingCategory?.isDefault}
               >
@@ -340,18 +390,18 @@ const Categories = () => {
               )}
             </div>
           </div>
-          <Button 
-            onClick={handleUpdateCategory} 
-            className="w-full bg-primary-400 hover:bg-primary-500 text-white cursor-pointer" 
+          <Button
+            onClick={handleUpdateCategory}
+            className="w-full bg-primary-400 hover:bg-primary-500 text-white cursor-pointer"
             disabled={editingCategory?.isDefault}
           >
             Update Category
           </Button>
         </DialogContent>
       </Dialog>
-      
+
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
+      <AlertDialog open={!!deletingCategory} onOpenChange={(open) => !open && setDeletingCategory(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>

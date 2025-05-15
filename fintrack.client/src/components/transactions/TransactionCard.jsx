@@ -9,7 +9,8 @@ import {
 } from '../ui/card';
 
 const TransactionCard = ({ transaction, onEdit, onDelete }) => {
-  const { id, amount, type, category, note, timestamp } = transaction;
+  const { transactionId, amount, type, categoryName, note, createdAt } = transaction;
+  console.log("transactionId",transactionId)
   const isExpense = type === 'expense';
   
   return (
@@ -22,7 +23,7 @@ const TransactionCard = ({ transaction, onEdit, onDelete }) => {
               <ArrowUp className="h-4 w-4 text-finance-income" />
             }
           </div>
-          <span className="font-medium">{category}</span>
+          <span className="font-medium">{categoryName }</span>
         </div>
         <div className={`font-bold ${isExpense ? 'expense-text' : 'income-text'}`}>
           {isExpense ? '-' : '+'} ${amount.toFixed(2)}
@@ -35,13 +36,13 @@ const TransactionCard = ({ transaction, onEdit, onDelete }) => {
       
       <CardFooter className="flex justify-between pt-0">
         <span className="text-xs text-muted-foreground">
-          {formatDistanceToNow(timestamp, { addSuffix: true })}
+          {formatDistanceToNow(createdAt, { addSuffix: true })}
         </span>
         <div className="flex space-x-2">
-          <Button className="cursor-pointer" variant="ghost" size="icon" onClick={() => onEdit(id)}>
+          <Button className="cursor-pointer" variant="ghost" size="icon" onClick={() => onEdit(transactionId)}>
             <Edit className="h-4 w-4" />
           </Button>
-          <Button className="cursor-pointer" variant="ghost" size="icon" onClick={() => onDelete(id)}>
+          <Button className="cursor-pointer" variant="ghost" size="icon" onClick={() => onDelete(transactionId)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

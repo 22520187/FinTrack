@@ -14,11 +14,13 @@ namespace FinTrack.Server.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly ITransactionRepository _transactionRepository;
+        private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
 
-        public TransactionController(ITransactionRepository transactionRepository, IMapper mapper)
+        public TransactionController(ITransactionRepository transactionRepository, ICategoryRepository categoryRepository, IMapper mapper)
         {
             _transactionRepository = transactionRepository;
+            _categoryRepository = categoryRepository;
             _mapper = mapper;
         }
 
@@ -41,7 +43,15 @@ namespace FinTrack.Server.Controllers
             }
 
             var transaction = _mapper.Map<Transaction>(createTransactionDto);
+
             transaction.UserId = userId;
+
+            await _categoryRepository.UpdateAsync(
+                c => c.CategoryName  == transaction.CategoryName && c.Type == transaction.Type,
+                category => {
+                    category.TotalAmount += (float?)transaction.Amount;
+                }
+            );
 
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
 
@@ -96,6 +106,9 @@ namespace FinTrack.Server.Controllers
             {
                 return BadRequest("Invalid transaction data.");
             }
+            var previousTransaction = await _transactionRepository.GetByIdAsync(
+                t => t.TransactionId == TransactionId
+            );
 
             var updatedTransaction = await _transactionRepository.UpdateAsync(
                 t => t.TransactionId == TransactionId, // Filter expression
@@ -110,6 +123,13 @@ namespace FinTrack.Server.Controllers
                     if (transactionDto.CreatedAt.HasValue) record.CreatedAt = transactionDto.CreatedAt;
                 });
 
+            await _categoryRepository.UpdateAsync(
+                c => c.CategoryName  == updatedTransaction.CategoryName && c.Type == updatedTransaction.Type,
+                category => {
+                    category.TotalAmount = (float?)(category.TotalAmount - (float?)previousTransaction.Amount + (float?)updatedTransaction.Amount);
+                }
+            );
+
             if (updatedTransaction == null)
             {
                 return NotFound($"Transaction with ID {TransactionId} not found.");
@@ -122,6 +142,14 @@ namespace FinTrack.Server.Controllers
         public async Task<ActionResult> DeleteTransaction(int TransactionId)
         {
             var deleted = await _transactionRepository.DeleteAsync(t => t.TransactionId == TransactionId);
+
+            await _categoryRepository.UpdateAsync(
+                c => c.CategoryName  == deleted.CategoryName && c.Type == deleted.Type,
+                category => {
+                    category.TotalAmount = (float?)(category.TotalAmount - (float?)deleted.Amount);
+                }
+            );
+
 
             if (deleted == null)
             {

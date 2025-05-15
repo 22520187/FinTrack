@@ -6,6 +6,7 @@ using FinTrack.Server.Repositories.Implement;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using FinTrack.Server.Middleware;
 using System.Text;
 
 
@@ -120,6 +121,8 @@ app.UseCors("AllowSpecificOrigins");
 
 app.UseHttpsRedirection();
 
+
+app.UseMiddleware<FinTrack.Server.Middleware.AuthMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
