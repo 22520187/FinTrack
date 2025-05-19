@@ -3,8 +3,10 @@ using FinTrack.Server.Models.Domain;
 using FinTrack.Server.Models.RequestModels;
 using FinTrack.Server.Models.ResponseModels;
 using FinTrack.Server.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -90,7 +92,7 @@ namespace FinTrack.Server.Controllers
             Response.Cookies.Append("AuthToken", token, new CookieOptions
             {
                 HttpOnly = true, // Prevents JavaScript access
-                Secure = true,  
+                Secure = true,
                 SameSite = SameSiteMode.None, // Adjust based on frontend needs
                 Expires = DateTime.UtcNow.AddDays(7) // Token expiration
             });
@@ -139,6 +141,73 @@ namespace FinTrack.Server.Controllers
             {
                 Success = true,
                 Message = "Password changed successfully"
+            });
+        }
+
+        [Authorize]
+        [HttpPost("update-info")]
+        public async Task<ActionResult<AuthResponse>> UpdateInfo(UpdateUserInfoRequest request)
+        {
+            // Get user ID from token
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new AuthResponse
+                {
+                    Success = false,
+                    Message = "User not authenticated"
+                });
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            // Verify user exists
+            var user = await _userRepository.GetByIdAsync(u => u.UserId == userId);
+            if (user == null)
+            {
+                return NotFound(new AuthResponse
+                {
+                    Success = false,
+                    Message = "User not found"
+                });
+            }
+
+            // Check if the user is trying to update their own profile
+            if (userId != request.UserId)
+            {
+                return Unauthorized(new AuthResponse
+                {
+                    Success = false,
+                    Message = "You can only update your own profile"
+                });
+            }
+
+            // Update user information
+            await _userRepository.UpdateAsync(
+                u => u.UserId == userId,
+                u =>
+                {
+                    u.FullName = request.FullName;
+                    u.Email = request.Email;
+                    u.Phone = request.Phone;
+                    u.City = request.City;
+                    u.District = request.District;
+                    u.Ward = request.Ward;
+                }
+            );
+
+            // Get updated user
+            var updatedUser = await _userRepository.GetByIdAsync(u => u.UserId == userId);
+
+            // Map to DTO
+            var userDto = _mapper.Map<UserDto>(updatedUser);
+
+            // Return response
+            return Ok(new AuthResponse
+            {
+                Success = true,
+                Message = "Profile updated successfully",
+                User = userDto
             });
         }
 

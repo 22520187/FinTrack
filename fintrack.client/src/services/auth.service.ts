@@ -16,7 +16,11 @@ class AuthService {
   }
 
   async forgetPassword(data: any) {
-    return await http.post(this.getURI("change-password"), data)
+    return await http.post(this.getURI("change-password"), data);
+  }
+
+  async updateUserInfo(data: any) {
+    return await http.post(this.getURI("update-info"), data);
   }
 }
 
