@@ -85,8 +85,17 @@ const Settings = () => {
     setIsProfileUpdating(true);
 
     try {
+      // Prepare data for API call - remove email as it's not updated
+      const updateData = {
+        fullName: editedProfile.fullName,
+        phone: editedProfile.phone,
+        city: editedProfile.city,
+        district: editedProfile.district,
+        ward: editedProfile.ward
+      };
+
       // Call the API to update the user profile
-      const response = await authService.updateUserInfo(editedProfile);
+      const response = await authService.updateUserInfo(userProfile.userId, updateData);
 
       if (response.status !== 200) {
         throw new Error("Failed to update profile");

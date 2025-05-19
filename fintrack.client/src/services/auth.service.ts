@@ -19,8 +19,8 @@ class AuthService {
     return await http.post(this.getURI("change-password"), data);
   }
 
-  async updateUserInfo(data: any) {
-    return await http.post(this.getURI("update-info"), data);
+  async updateUserInfo(userId: number, data: any) {
+    return await http.put(this.getURI(`update-info/${userId}`), data);
   }
 }
 
