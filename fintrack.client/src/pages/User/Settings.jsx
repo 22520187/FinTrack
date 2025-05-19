@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Edit, LogOut, Check } from 'lucide-react';
 import {
   Card,
@@ -10,23 +10,50 @@ import {
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { useToast } from '../../hooks/use-toast';
+import authService from '../../services/auth.service';
 
 const Settings = () => {
   const { toast } = useToast();
 
   // User profile state
   const [userProfile, setUserProfile] = useState({
-    fullName: 'Khanh Dang',
-    email: '22520187@gm.uit.edu.vn',
-    phone: '123456789',
-    city: 'An Giang',
-    district: 'Huyện Chợ Mới',
-    ward: 'Xã Nhơn Mỹ'
+    userId: 0,
+    fullName: '',
+    email: '',
+    phone: '',
+    city: '',
+    district: '',
+    ward: ''
   });
 
   // Editing state
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState({...userProfile});
+
+  // Loading state for initial data fetch
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    // In a real application, you would fetch the user data from the server
+    // For now, we'll use mock data
+    // This would be replaced with an API call to get the current user's profile
+
+    // Mock user data for demonstration
+    const userData = {
+      userId: 1,
+      fullName: 'Khanh Dang',
+      email: '22520187@gm.uit.edu.vn',
+      phone: '123456789',
+      city: 'An Giang',
+      district: 'Huyện Chợ Mới',
+      ward: 'Xã Nhơn Mỹ'
+    };
+
+    setUserProfile(userData);
+    setEditedProfile(userData);
+    setIsLoading(false);
+  }, []);
 
   // Password state
   const [passwordData, setPasswordData] = useState({
@@ -58,10 +85,16 @@ const Settings = () => {
     setIsProfileUpdating(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the API to update the user profile
+      const response = await authService.updateUserInfo(editedProfile);
 
-      setUserProfile(editedProfile);
+      if (response.status !== 200) {
+        throw new Error("Failed to update profile");
+      }
 
+      // Update local state with the response data
+      const updatedUser = response.data.user;
+      setUserProfile(updatedUser);
       setIsEditing(false);
 
       toast({
@@ -69,6 +102,7 @@ const Settings = () => {
         description: "Your profile information has been updated successfully.",
       });
     } catch (error) {
+      console.error("Error updating profile:", error);
       toast({
         variant: "destructive",
         title: "Update failed",
@@ -105,9 +139,19 @@ const Settings = () => {
     setIsPasswordUpdating(true);
 
     try {
-      // Here you would connect to your API to update the password
-      // For now, we'll just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Prepare data for API call
+      const changePasswordData = {
+        email: userProfile.email,
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      };
+
+      // Call the API to change the password
+      const response = await authService.forgetPassword(changePasswordData);
+
+      if (response.status !== 200) {
+        throw new Error("Failed to change password");
+      }
 
       toast({
         title: "Password updated",
@@ -121,10 +165,11 @@ const Settings = () => {
         confirmPassword: '',
       });
     } catch (error) {
+      console.error("Error changing password:", error);
       toast({
         variant: "destructive",
         title: "Update failed",
-        description: "There was a problem updating your password.",
+        description: error.response?.data?.message || "There was a problem updating your password.",
       });
     } finally {
       setIsPasswordUpdating(false);
@@ -135,7 +180,12 @@ const Settings = () => {
     <div className="container mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6 text-left">USER PROFILE</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-lg">Loading profile information...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* User Profile Card */}
         <Card>
           <CardHeader>
@@ -399,6 +449,7 @@ const Settings = () => {
           </form>
         </Card>
       </div>
+      )}
     </div>
   );
 };
