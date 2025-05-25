@@ -22,5 +22,33 @@ namespace FinTrack.Server.Repositories.Implement
         {
             return await _dbSet.Where(t => t.UserId == UserId && t.CategoryName == CategoryName).ToListAsync();
         }
+
+        public async Task<decimal> GetTotalIncomeByUserIdAsync(int userId)
+        {
+            return await _dbSet
+                .Where(t => t.UserId == userId && t.Type.ToLower() == "income")
+                .SumAsync(t => t.Amount);
+        }
+
+        public async Task<decimal> GetTotalExpenseByUserIdAsync(int userId)
+        {
+            return await _dbSet
+                .Where(t => t.UserId == userId && t.Type.ToLower() == "expense")
+                .SumAsync(t => t.Amount);
+        }
+
+        public async Task<List<Transaction>> GetTransactionsByUserIdAndDateRangeAsync(int userId, DateTime startDate, DateTime endDate)
+        {
+            return await _dbSet
+                .Where(t => t.UserId == userId && t.CreatedAt >= startDate && t.CreatedAt <= endDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Transaction>> GetTransactionsByUserIdAndTypeAsync(int userId, string type)
+        {
+            return await _dbSet
+                .Where(t => t.UserId == userId && t.Type.ToLower() == type.ToLower())
+                .ToListAsync();
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BalanceCard from '../../components/dashboard/BalanceCard';
 import ExpensesByCategoryChart from '../../components/dashboard/ExpensesByCategoryChart';
@@ -7,77 +7,95 @@ import TransactionHistoryChart from '../../components/dashboard/TransactionHisto
 import TransactionForm from '../../components/transactions/TransactionForm';
 import GoalProgressCard from '../../components/dashboard/GoalProgressCard';
 import { useToast } from '../../hooks/use-toast';
-
-// Mock data
-const mockTransactions = [
-  {
-    id: '1',
-    amount: 2500,
-    type: 'income',
-    category: 'Salary',
-    note: 'Monthly salary',
-    timestamp: new Date(2023, 4, 1)
-  },
-  // ...existing transactions
-];
-
-const categoryExpenses = [
-  { name: 'Food', value: 450, color: '#50bbf5' }, // primary-400
-  { name: 'Transport', value: 200, color: '#5069f5' }, // secondary-400
-  { name: 'Entertainment', value: 320, color: '#f58a50' }, // compleprimary-300
-  { name: 'Shopping', value: 180, color: '#f4ee69' }, // complesecond-400
-  { name: 'Utilities', value: 150, color: '#46aff2' }, // primary-500
-];
-
-const transactionHistory = [
-  { date: 'Jan', income: 3000, expense: 1200 },
-  { date: 'Feb', income: 3200, expense: 1500 },
-  { date: 'Mar', income: 2800, expense: 1800 },
-  { date: 'Apr', income: 3500, expense: 1300 },
-  { date: 'May', income: 3000, expense: 1400 },
-];
-
-const mockGoals = [
-  {
-    id: '1',
-    name: 'Save for a new laptop',
-    targetAmount: 1200,
-    currentAmount: 500,
-    deadline: new Date(2023, 10, 1)
-  },
-  // ...existing goals
-];
+import { useDashboard, useGoals, useTransactions } from '../../hooks/useAPI';
 
 const Home = () => {
-  const [transactions, setTransactions] = useState(mockTransactions);
-  const [goals, setGoals] = useState(mockGoals);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Calculate totals
-  const totalIncome = transactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Use API hooks
+  const {
+    summary,
+    categoryExpenses,
+    transactionHistory,
+    loading: dashboardLoading,
+    error: dashboardError,
+    refetch: refetchDashboard
+  } = useDashboard();
 
-  const totalExpense = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const {
+    goals,
+    loading: goalsLoading,
+    error: goalsError
+  } = useGoals();
 
-  const balance = totalIncome - totalExpense;
+  const {
+    transactions,
+    createTransaction,
+    loading: transactionsLoading,
+    error: transactionsError,
+    refetch: refetchTransactions
+  } = useTransactions();
 
-  const handleAddTransaction = (newTransaction) => {
-    const transactionWithId = {
-      ...newTransaction,
-      id: Date.now().toString(),
-    };
+  // Handle loading states
+  const isLoading = dashboardLoading || goalsLoading || transactionsLoading;
 
-    setTransactions(prev => [transactionWithId, ...prev]);
+  // Handle errors
+  useEffect(() => {
+    if (dashboardError || goalsError || transactionsError) {
+      toast({
+        title: "Error",
+        description: "Failed to load data. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [dashboardError, goalsError, transactionsError, toast]);
 
-    toast({
-      title: "Transaction added",
-      description: `Your ${newTransaction.type} has been recorded successfully.`,
-    });
+  // Get balance from summary or calculate from transactions
+  const balance = summary?.balance || 0;
+  const totalIncome = summary?.totalIncome || 0;
+  const totalExpense = summary?.totalExpense || 0;
+
+  const handleAddTransaction = async (newTransaction) => {
+    try {
+      // Convert frontend format to backend format
+      const transactionData = {
+        amount: parseFloat(newTransaction.amount),
+        type: newTransaction.type,
+        categoryName: newTransaction.category,
+        note: newTransaction.note,
+        isImportant: newTransaction.isImportant || false,
+        createdAt: new Date().toISOString(),
+      };
+
+      await createTransaction(transactionData);
+
+      // Refresh dashboard data to get updated totals
+      refetchDashboard();
+      refetchTransactions();
+
+      toast({
+        title: "Transaction added",
+        description: `Your ${newTransaction.type} has been recorded successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add transaction. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white text-ebony min-h-screen p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading dashboard...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white text-ebony min-h-screen p-6">
@@ -92,16 +110,16 @@ const Home = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2">
-          <TransactionHistoryChart data={transactionHistory} />
+          <TransactionHistoryChart data={transactionHistory || []} />
         </div>
-        <GoalProgressCard goals={goals} />
+        <GoalProgressCard goals={goals || []} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <ExpensesByCategoryChart data={categoryExpenses} />
+        <ExpensesByCategoryChart data={categoryExpenses || []} />
         <div className="lg:col-span-2">
           <RecentTransactionsList
-            transactions={transactions}
+            transactions={transactions || []}
             onViewAll={() => navigate('/transactions')}
           />
         </div>

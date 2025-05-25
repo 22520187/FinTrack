@@ -32,6 +32,18 @@ namespace HealthBuddy.Server.Mapping
             CreateMap<CategoryDTO, Category>();
             CreateMap<User, UserDto>();
 
+            // Goal mappings
+            CreateMap<Goal, GoalDTO>();
+            CreateMap<GoalDTO, Goal>();
+            CreateMap<Goal, CreateGoalDTO>();
+            CreateMap<CreateGoalDTO, Goal>();
+
+            // GoalProgress mappings
+            CreateMap<GoalProgress, GoalProgressDTO>();
+            CreateMap<GoalProgressDTO, GoalProgress>();
+            CreateMap<GoalProgress, CreateGoalProgressDTO>();
+            CreateMap<CreateGoalProgressDTO, GoalProgress>();
+
         }
     }
 }
