@@ -19,6 +19,10 @@ class CategoryService {
     return await http.get(this.getURI(`total/${categoryName}?Type=${type}`))
   }
 
+  async updateCategory(categoryName: string, type: string, data: any) {
+    return await http.put(this.getURI(`update/${categoryName}?Type=${type}`), data);
+  }
+
   async deleteCategory(categoryName: string, type: string) {
     return await http.delete(this.getURI(`delete/${categoryName}?Type=${type}`))
   }
