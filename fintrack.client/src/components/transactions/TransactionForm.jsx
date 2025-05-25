@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Spin } from 'antd';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -26,7 +27,8 @@ const TransactionForm = ({
     note: ''
   },
   mode = 'create',
-  className = ''
+  className = '',
+  loading = false
 }) => {
   const [categories, setCategories] = useState(null);
   const [amount, setAmount] = useState(initialValues.amount);
@@ -80,7 +82,15 @@ const TransactionForm = ({
   };
 
   return (
-    <Card className={`w-full bg-white ${className}`}>
+    <Card className={`w-full bg-white ${className} ${loading ? 'relative' : ''}`}>
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-10 rounded-lg">
+          <div className="flex flex-col items-center">
+            <Spin size="large" />
+            <span className="mt-2 text-sm text-gray-600">Processing transaction...</span>
+          </div>
+        </div>
+      )}
       <CardHeader className="text-left">
         <CardTitle className="text-primary-900">
           {mode === 'create' ? 'Add New Transaction' : 'Edit Transaction'}
@@ -177,8 +187,16 @@ const TransactionForm = ({
           <Button
             className="w-full bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
             type="submit"
+            disabled={loading}
           >
-            {mode === 'create' ? 'Add Transaction' : 'Update Transaction'}
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <Spin size="small" className="mr-2" />
+                {mode === 'create' ? 'Adding...' : 'Updating...'}
+              </div>
+            ) : (
+              mode === 'create' ? 'Add Transaction' : 'Update Transaction'
+            )}
           </Button>
         </CardFooter>
       </form>

@@ -2,6 +2,7 @@ using AutoMapper;
 using FinTrack.Server.Models.Domain;
 using FinTrack.Server.Models.DTO;
 using FinTrack.Server.Repositories;
+using FinTrack.Server.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -42,7 +43,9 @@ namespace FinTrack.Server.Controllers
 
             var goal = _mapper.Map<Goal>(createGoalDto);
             goal.UserId = userId;
-            goal.CreatedAt = DateTime.UtcNow;
+
+            // Set timezone to UTC+7 (Vietnam timezone)
+            goal.CreatedAt = TimeZoneHelper.GetVietnamTime();
 
             var createdGoal = await _goalRepository.CreateAsync(goal);
             var goalResponse = _mapper.Map<GoalDTO>(createdGoal);
@@ -174,7 +177,9 @@ namespace FinTrack.Server.Controllers
 
             var progress = _mapper.Map<GoalProgress>(createProgressDto);
             progress.GoalId = goalId;
-            progress.UpdatedAt = DateTime.UtcNow;
+
+            // Set timezone to UTC+7 (Vietnam timezone)
+            progress.UpdatedAt = TimeZoneHelper.GetVietnamTime();
 
             var createdProgress = await _goalProgressRepository.CreateAsync(progress);
 
