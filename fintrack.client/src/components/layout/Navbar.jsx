@@ -8,7 +8,7 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-primary-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-card-dark dark:border-primary-800">
+    <header className="sticky top-0 z-50 w-full border-b border-primary-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
@@ -18,22 +18,22 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
+          <Link to="/" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
             Dashboard
           </Link>
-          <Link to="/transactions" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
+          <Link to="/transactions" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
             Transactions
           </Link>
-          <Link to="/categories" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
+          <Link to="/categories" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
             Categories
           </Link>
-          <Link to="/goals" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
+          <Link to="/goals" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
             Goals
           </Link>
-          <Link to="/reports" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
+          <Link to="/reports" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
             Reports
           </Link>
-          <Link to="/settings" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
+          <Link to="/settings" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
             Settings
           </Link>
         </nav>
@@ -64,42 +64,42 @@ const Navbar = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-16 z-50 grid gap-2 bg-white dark:bg-card-dark p-6 shadow-lg animate-in slide-in-from-top-5 md:hidden">
+        <div className="fixed inset-0 top-16 z-50 grid gap-2 bg-white p-6 shadow-lg animate-in slide-in-from-top-5 md:hidden">
           <nav className="grid gap-4">
             <Link
               to="/"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony dark:text-white-smoke hover:text-primary-600"
+              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
               onClick={() => setMobileMenuOpen(false)}
             >
               Dashboard
             </Link>
             <Link
               to="/transactions"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony dark:text-white-smoke hover:text-primary-600"
+              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
               onClick={() => setMobileMenuOpen(false)}
             >
               Transactions
             </Link>
             <Link
               to="/categories"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony dark:text-white-smoke hover:text-primary-600"
+              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
               onClick={() => setMobileMenuOpen(false)}
             >
               Categories
             </Link>
-            <Link to="/goals" className="text-sm font-medium text-ebony dark:text-white-smoke transition-colors hover:text-primary-600">
+            <Link to="/goals" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
             Goals
           </Link>
             <Link
               to="/reports"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony dark:text-white-smoke hover:text-primary-600"
+              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
               onClick={() => setMobileMenuOpen(false)}
             >
               Reports
             </Link>
             <Link
               to="/settings"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony dark:text-white-smoke hover:text-primary-600"
+              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Settings className="h-5 w-5" />

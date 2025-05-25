@@ -21,7 +21,6 @@ const SelectTrigger = React.forwardRef((props, ref) => {
         "placeholder:text-primary-400",
         "focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        "dark:border-primary-700 dark:bg-card-dark dark:text-white-smoke dark:ring-offset-card-dark",
         "[&>span]:line-clamp-1",
         className
       )}
@@ -80,7 +79,6 @@ const SelectContent = React.forwardRef((props, ref) => {
         className={cn(
           "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md",
           "border border-primary-200 bg-white text-ebony shadow-md",
-          "dark:border-primary-700 dark:bg-card-dark dark:text-white-smoke",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -131,7 +129,6 @@ const SelectItem = React.forwardRef((props, ref) => {
         "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm",
         "outline-none",
         "focus:bg-primary-50 focus:text-primary-600",
-        "dark:focus:bg-primary-800 dark:focus:text-primary-200",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
@@ -153,7 +150,7 @@ const SelectSeparator = React.forwardRef((props, ref) => {
   return (
     <SelectPrimitive.Separator
       ref={ref}
-      className={cn("-mx-1 my-1 h-px bg-primary-100 dark:bg-primary-800", className)}
+      className={cn("-mx-1 my-1 h-px bg-primary-100", className)}
       {...otherProps}
     />
   )

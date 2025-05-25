@@ -10,7 +10,7 @@ const DialogPortal = DialogPrimitive.Portal
 const DialogClose = DialogPrimitive.Close
 
 const DialogOverlay = React.forwardRef(function DialogOverlay(
-  { className, ...props }, 
+  { className, ...props },
   ref
 ) {
   return (
@@ -27,7 +27,7 @@ const DialogOverlay = React.forwardRef(function DialogOverlay(
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const DialogContent = React.forwardRef(function DialogContent(
-  { className, children, ...props }, 
+  { className, children, ...props },
   ref
 ) {
   return (
@@ -37,7 +37,6 @@ const DialogContent = React.forwardRef(function DialogContent(
         ref={ref}
         className={cn(
           "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-primary-200 bg-white p-6 shadow-lg duration-200",
-          "dark:border-primary-700 dark:bg-card-dark dark:text-white-smoke",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2",
           "data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
@@ -47,7 +46,7 @@ const DialogContent = React.forwardRef(function DialogContent(
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 disabled:pointer-events-none dark:ring-offset-card-dark">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 disabled:pointer-events-none">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -58,7 +57,7 @@ const DialogContent = React.forwardRef(function DialogContent(
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = React.forwardRef(function DialogHeader(
-  { className, ...props }, 
+  { className, ...props },
   ref
 ) {
   return (
@@ -75,7 +74,7 @@ const DialogHeader = React.forwardRef(function DialogHeader(
 DialogHeader.displayName = "DialogHeader"
 
 const DialogFooter = React.forwardRef(function DialogFooter(
-  { className, ...props }, 
+  { className, ...props },
   ref
 ) {
   return (
@@ -92,14 +91,14 @@ const DialogFooter = React.forwardRef(function DialogFooter(
 DialogFooter.displayName = "DialogFooter"
 
 const DialogTitle = React.forwardRef(function DialogTitle(
-  { className, ...props }, 
+  { className, ...props },
   ref
 ) {
   return (
     <DialogPrimitive.Title
       ref={ref}
       className={cn(
-        "text-lg font-semibold leading-none tracking-tight text-primary-900 dark:text-primary-100",
+        "text-lg font-semibold leading-none tracking-tight text-primary-900",
         className
       )}
       {...props}
@@ -109,14 +108,14 @@ const DialogTitle = React.forwardRef(function DialogTitle(
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
 const DialogDescription = React.forwardRef(function DialogDescription(
-  { className, ...props }, 
+  { className, ...props },
   ref
 ) {
   return (
     <DialogPrimitive.Description
       ref={ref}
       className={cn(
-        "text-sm text-primary-600 dark:text-primary-300",
+        "text-sm text-primary-600",
         className
       )}
       {...props}

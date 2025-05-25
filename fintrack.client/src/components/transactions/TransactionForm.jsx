@@ -80,16 +80,16 @@ const TransactionForm = ({
   };
 
   return (
-    <Card className={`w-full bg-white dark:bg-card-dark ${className}`}>
+    <Card className={`w-full bg-white ${className}`}>
       <CardHeader className="text-left">
-        <CardTitle className="text-primary-900 dark:text-primary-100">
+        <CardTitle className="text-primary-900">
           {mode === 'create' ? 'Add New Transaction' : 'Edit Transaction'}
         </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2 text-left">
-            <label className=" text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="amount">
+            <label className=" text-sm font-medium text-primary-800" htmlFor="amount">
               Amount
             </label>
             <Input
@@ -106,7 +106,7 @@ const TransactionForm = ({
           </div>
 
           <div className="space-y-2 text-left">
-            <label className="text-sm font-medium text-primary-800 dark:text-primary-200">
+            <label className="text-sm font-medium text-primary-800">
               Transaction Type
             </label>
             <div className="flex gap-2">
@@ -139,11 +139,11 @@ const TransactionForm = ({
           </div>
 
           <div className="space-y-2 text-left">
-            <label className="text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="category">
+            <label className="text-sm font-medium text-primary-800" htmlFor="category">
               Category
             </label>
             <Select value={categoryName} onValueChange={setCategoryName}>
-              <SelectTrigger className="mt-2 border-primary-200 dark:border-primary-700 cursor-pointer">
+              <SelectTrigger className="mt-2 border-primary-200 cursor-pointer">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
@@ -159,7 +159,7 @@ const TransactionForm = ({
           </div>
 
           <div className="space-y-2 text-left">
-            <label className="text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="note">
+            <label className="text-sm font-medium text-primary-800" htmlFor="note">
               Note (Optional)
             </label>
             <Textarea

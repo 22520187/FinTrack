@@ -56,7 +56,7 @@ const defaultCategories = [
 ];
 
 const Categories = () => {
-  
+
   const [categories, setCategories] = useState(defaultCategories);
   const [filterType, setFilterType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -235,7 +235,7 @@ const Categories = () => {
         });
         return;
       }
-      
+
       toast({
         title: "Category deleted",
         description: "The category has been removed.",
@@ -259,7 +259,7 @@ const Categories = () => {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="categoryName">Category Name</label>
+                <label className="text-sm font-medium text-primary-800" htmlFor="categoryName">Category Name</label>
                 <Input
                   id="categoryName"
                   placeholder="e.g. Groceries"
@@ -268,9 +268,9 @@ const Categories = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-primary-800 dark:text-primary-200">Category Type</label>
+                <label className="text-sm font-medium text-primary-800">Category Type</label>
                 <Select value={newCategoryType} onValueChange={setNewCategoryType}>
-                  <SelectTrigger className="border-primary-200 dark:border-primary-700">
+                  <SelectTrigger className="border-primary-200">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -295,7 +295,7 @@ const Categories = () => {
         </div>
         <div className="w-full sm:w-1/3">
           <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="border-primary-200 dark:border-primary-700">
+            <SelectTrigger className="border-primary-200">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
             <SelectContent>
@@ -309,9 +309,9 @@ const Categories = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredCategories.map(category => (
-          <Card onClick={()=>handleClickOnCategoryCard(category.categoryName)} key={category.id} className={`${category.isDefault ? 'border-primary-200' : 'border-primary-400/30'} bg-white dark:bg-card-dark`}>
+          <Card onClick={()=>handleClickOnCategoryCard(category.categoryName)} key={category.id} className={`${category.isDefault ? 'border-primary-200' : 'border-primary-400/30'} bg-white`}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex justify-between items-center text-primary-900 dark:text-primary-100">
+              <CardTitle className="text-lg flex justify-between items-center text-primary-900">
                 {category.categoryName}
                 <span className={`text-xs px-2 py-1 rounded ${category.type === 'expense' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
                   }`}>
@@ -320,7 +320,7 @@ const Categories = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-primary-600 dark:text-primary-300">
+              <p className="text-xs text-primary-600">
                 {category.totalSpentAmount ? `Total amount spent: ${category.totalSpentAmount}` : ''}
               </p>
             </CardContent>
@@ -345,7 +345,7 @@ const Categories = () => {
 
         {filteredCategories.length === 0 && (
           <div className="col-span-full py-12 text-center">
-            <p className="text-xl text-primary-600 dark:text-primary-300">No categories found</p>
+            <p className="text-xl text-primary-600">No categories found</p>
           </div>
         )}
       </div>
@@ -358,7 +358,7 @@ const Categories = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="editCategoryName">Category Name</label>
+              <label className="text-sm font-medium text-primary-800" htmlFor="editCategoryName">Category Name</label>
               <Input
                 id="editCategoryName"
                 placeholder="e.g. Groceries"
@@ -367,17 +367,17 @@ const Categories = () => {
                 disabled={editingCategory?.isDefault}
               />
               {editingCategory?.isDefault && (
-                <p className="text-xs text-primary-600 dark:text-primary-300">Default categories cannot be renamed.</p>
+                <p className="text-xs text-primary-600">Default categories cannot be renamed.</p>
               )}
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-primary-800 dark:text-primary-200">Category Type</label>
+              <label className="text-sm font-medium text-primary-800">Category Type</label>
               <Select
                 value={newCategoryType}
                 onValueChange={setNewCategoryType}
                 disabled={editingCategory?.isDefault}
               >
-                <SelectTrigger className="border-primary-200 dark:border-primary-700">
+                <SelectTrigger className="border-primary-200">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -386,7 +386,7 @@ const Categories = () => {
                 </SelectContent>
               </Select>
               {editingCategory?.isDefault && (
-                <p className="text-xs text-primary-600 dark:text-primary-300">Default category types cannot be changed.</p>
+                <p className="text-xs text-primary-600">Default category types cannot be changed.</p>
               )}
             </div>
           </div>
