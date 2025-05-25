@@ -13,7 +13,22 @@ const COLORS = [
 ];
 
 const ExpensesByCategoryChart = ({ data }) => {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+  // If no data, show a placeholder
+  if (!data || data.length === 0) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-primary-800">Expenses by Category</CardTitle>
+          <CardDescription className="text-primary-600">Your spending distribution</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] flex items-center justify-center">
+            <p className="text-primary-500">No expense data available</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">

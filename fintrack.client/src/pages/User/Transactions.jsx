@@ -129,9 +129,6 @@ const Transactions = () => {
         }
 
         const transactions = response.data
-        if (params.get("categoryName")) {
-          setFilteredCategorieType(params.get("categoryName"))
-        }
         setTransactions(transactions)
       } catch (error) {
         toast({
@@ -147,25 +144,26 @@ const Transactions = () => {
     getAllTransaction()
   }, [])
 
-  const filteredTransactions = transactions.filter(transaction => {
-    console.log("transactions", transactions)
-    // Filter by type
-    if (filterType !== 'all' && transaction.type !== filterType) {
-      return false;
-    }
+  const filteredTransactions = transactions
+    .filter(transaction => {
+      // Filter by type
+      if (filterType !== 'all' && transaction.type !== filterType) {
+        return false;
+      }
 
-    // Apply search filter (case insensitive)
-    if (searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase();
-      if (!transaction.categoryName) return false
-      return (
-        transaction.categoryName.toLowerCase().includes(query) ||
-        (transaction.note && transaction.note.toLowerCase().includes(query))
-      );
-    }
+      // Apply search filter (case insensitive)
+      if (searchQuery.trim() !== '') {
+        const query = searchQuery.toLowerCase();
+        if (!transaction.categoryName) return false
+        return (
+          transaction.categoryName.toLowerCase().includes(query) ||
+          (transaction.note && transaction.note.toLowerCase().includes(query))
+        );
+      }
 
-    return true;
-  });
+      return true;
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by newest first
 
   const handleAddTransaction = async (newTransaction) => {
     console.log("newTransaction", newTransaction);

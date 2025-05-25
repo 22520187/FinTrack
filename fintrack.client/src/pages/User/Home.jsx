@@ -65,7 +65,7 @@ const Home = () => {
       const transactionData = {
         amount: parseFloat(newTransaction.amount),
         type: newTransaction.type,
-        categoryName: newTransaction.category,
+        categoryName: newTransaction.categoryName,
         note: newTransaction.note,
         isImportant: newTransaction.isImportant || false,
         // createdAt will be set automatically by database default value

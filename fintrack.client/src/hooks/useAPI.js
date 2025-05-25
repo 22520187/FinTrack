@@ -24,6 +24,7 @@ export const useDashboard = () => {
       ]);
 
       setSummary(summaryResponse.data);
+
       setCategoryExpenses(categoryResponse.data);
       setTransactionHistory(historyResponse.data);
     } catch (err) {
@@ -190,7 +191,9 @@ export const useTransactions = () => {
         isImportant: transaction.isImportant
       }));
 
-      setTransactions(mappedTransactions);
+      // Sort by newest first (backend should already be sorted, but ensure it)
+      const sortedTransactions = mappedTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setTransactions(sortedTransactions);
     } catch (err) {
       setError(err.message);
       console.error('Transactions API error:', err);
@@ -215,6 +218,7 @@ export const useTransactions = () => {
         isImportant: newTransaction.isImportant
       };
 
+      // Add new transaction to the beginning of the list (newest first)
       setTransactions(prev => [mappedTransaction, ...prev]);
       return mappedTransaction;
     } catch (err) {

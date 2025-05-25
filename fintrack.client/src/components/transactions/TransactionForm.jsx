@@ -14,10 +14,6 @@ import {
 import { useEffect } from 'react';
 import categoryService from '../../services/category.service';
 
-// Mock categories
-const EXPENSE_CATEGORIES = ['Food', 'Transport', 'Housing', 'Entertainment', 'Shopping', 'Utilities', 'Health', 'Other'];
-const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Gift', 'Investment', 'Other'];
-
 const TransactionForm = ({
   onSubmit,
   initialValues = {
@@ -33,7 +29,7 @@ const TransactionForm = ({
   const [categories, setCategories] = useState(null);
   const [amount, setAmount] = useState(initialValues.amount);
   const [type, setType] = useState(initialValues.type);
-  const [categoryName, setCategoryName] = useState(initialValues.category);
+  const [categoryName, setCategoryName] = useState(initialValues.category || '');
   const [note, setNote] = useState(initialValues.note || '');
 
   useEffect(() => {
@@ -58,11 +54,21 @@ const TransactionForm = ({
     getCategory()
   }, [])
 
+  // Reset category when type changes
+  useEffect(() => {
+    setCategoryName('');
+  }, [type])
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (amount <= 0) {
       alert('Please enter a valid amount');
+      return;
+    }
+
+    if (!categoryName || categoryName.trim() === '') {
+      alert('Please select a category');
       return;
     }
 
@@ -77,6 +83,7 @@ const TransactionForm = ({
     // Reset form if creating new transaction
     if (mode === 'create') {
       setAmount(0);
+      setCategoryName('');
       setNote('');
     }
   };
@@ -152,7 +159,7 @@ const TransactionForm = ({
             <label className="text-sm font-medium text-primary-800" htmlFor="category">
               Category
             </label>
-            <Select value={categoryName} onValueChange={setCategoryName}>
+            <Select value={categoryName} onValueChange={setCategoryName} required>
               <SelectTrigger className="mt-2 border-primary-200 cursor-pointer">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
