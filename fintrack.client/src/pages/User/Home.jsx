@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Spin, Skeleton, Card } from 'antd';
 import BalanceCard from '../../components/dashboard/BalanceCard';
 import ExpensesByCategoryChart from '../../components/dashboard/ExpensesByCategoryChart';
 import RecentTransactionsList from '../../components/dashboard/RecentTransactionsList';
@@ -7,103 +8,194 @@ import TransactionHistoryChart from '../../components/dashboard/TransactionHisto
 import TransactionForm from '../../components/transactions/TransactionForm';
 import GoalProgressCard from '../../components/dashboard/GoalProgressCard';
 import { useToast } from '../../hooks/use-toast';
-
-// Mock data
-const mockTransactions = [
-  {
-    id: '1',
-    amount: 2500,
-    type: 'income',
-    category: 'Salary',
-    note: 'Monthly salary',
-    timestamp: new Date(2023, 4, 1)
-  },
-  // ...existing transactions
-];
-
-const categoryExpenses = [
-  { name: 'Food', value: 450, color: '#50bbf5' }, // primary-400
-  { name: 'Transport', value: 200, color: '#5069f5' }, // secondary-400
-  { name: 'Entertainment', value: 320, color: '#f58a50' }, // compleprimary-300
-  { name: 'Shopping', value: 180, color: '#f4ee69' }, // complesecond-400
-  { name: 'Utilities', value: 150, color: '#46aff2' }, // primary-500
-];
-
-const transactionHistory = [
-  { date: 'Jan', income: 3000, expense: 1200 },
-  { date: 'Feb', income: 3200, expense: 1500 },
-  { date: 'Mar', income: 2800, expense: 1800 },
-  { date: 'Apr', income: 3500, expense: 1300 },
-  { date: 'May', income: 3000, expense: 1400 },
-];
-
-const mockGoals = [
-  {
-    id: '1',
-    name: 'Save for a new laptop',
-    targetAmount: 1200,
-    currentAmount: 500,
-    deadline: new Date(2023, 10, 1)
-  },
-  // ...existing goals
-];
+import { useDashboard, useGoals, useTransactions } from '../../hooks/useAPI';
 
 const Home = () => {
-  const [transactions, setTransactions] = useState(mockTransactions);
-  const [goals, setGoals] = useState(mockGoals);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isAddingTransaction, setIsAddingTransaction] = useState(false);
 
-  // Calculate totals
-  const totalIncome = transactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Use API hooks
+  const {
+    summary,
+    categoryExpenses,
+    transactionHistory,
+    loading: dashboardLoading,
+    error: dashboardError,
+    refetch: refetchDashboard
+  } = useDashboard();
 
-  const totalExpense = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const {
+    goals,
+    loading: goalsLoading,
+    error: goalsError
+  } = useGoals();
 
-  const balance = totalIncome - totalExpense;
+  const {
+    transactions,
+    createTransaction,
+    loading: transactionsLoading,
+    error: transactionsError,
+    refetch: refetchTransactions
+  } = useTransactions();
 
-  const handleAddTransaction = (newTransaction) => {
-    const transactionWithId = {
-      ...newTransaction,
-      id: Date.now().toString(),
-    };
+  // Handle loading states
+  const isLoading = dashboardLoading || goalsLoading || transactionsLoading;
 
-    setTransactions(prev => [transactionWithId, ...prev]);
+  // Handle errors
+  useEffect(() => {
+    if (dashboardError || goalsError || transactionsError) {
+      toast({
+        title: "Error",
+        description: "Failed to load data. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [dashboardError, goalsError, transactionsError, toast]);
 
-    toast({
-      title: "Transaction added",
-      description: `Your ${newTransaction.type} has been recorded successfully.`,
-    });
+  // Get balance from summary or calculate from transactions
+  const balance = summary?.balance || 0;
+  const totalIncome = summary?.totalIncome || 0;
+  const totalExpense = summary?.totalExpense || 0;
+
+  const handleAddTransaction = async (newTransaction) => {
+    setIsAddingTransaction(true);
+    try {
+      // Convert frontend format to backend format
+      const transactionData = {
+        amount: parseFloat(newTransaction.amount),
+        type: newTransaction.type,
+        categoryName: newTransaction.categoryName,
+        note: newTransaction.note,
+        isImportant: newTransaction.isImportant || false,
+        // createdAt will be set automatically by database default value
+      };
+
+      await createTransaction(transactionData);
+
+      // Refresh dashboard data to get updated totals
+      refetchDashboard();
+      refetchTransactions();
+
+      toast({
+        title: "Transaction added",
+        description: `Your ${newTransaction.type} has been recorded successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add transaction. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingTransaction(false);
+    }
   };
 
+  if (isLoading) {
+    return (
+      <div className="bg-white text-ebony min-h-screen p-6">
+        <div className="flex items-center justify-center mb-6">
+          <Spin size="large" />
+          <span className="ml-3 text-lg">Loading dashboard...</span>
+        </div>
+
+        {/* Skeleton for dashboard layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <Card>
+            <Skeleton active paragraph={{ rows: 3 }} />
+          </Card>
+          <div className="lg:col-span-2">
+            <Card>
+              <Skeleton active paragraph={{ rows: 4 }} />
+            </Card>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-2">
+            <Card>
+              <Skeleton active paragraph={{ rows: 6 }} />
+            </Card>
+          </div>
+          <Card>
+            <Skeleton active paragraph={{ rows: 4 }} />
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <Card>
+            <Skeleton active paragraph={{ rows: 5 }} />
+          </Card>
+          <div className="lg:col-span-2">
+            <Card>
+              <Skeleton active paragraph={{ rows: 5 }} />
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-card-dark text-ebony dark:text-white-smoke min-h-screen p-6">
+    <div className="bg-white text-ebony min-h-screen p-6">
       <h1 className="text-3xl font-bold mb-6 text-left">Financial Dashboard</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        <BalanceCard balance={balance} income={totalIncome} expense={totalExpense} />
+        {dashboardLoading ? (
+          <Card>
+            <Skeleton active paragraph={{ rows: 3 }} />
+          </Card>
+        ) : (
+          <BalanceCard balance={balance} income={totalIncome} expense={totalExpense} />
+        )}
         <div className="lg:col-span-2 flex justify-start">
-          <TransactionForm onSubmit={handleAddTransaction} className="w-full" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2">
-          <TransactionHistoryChart data={transactionHistory} />
-        </div>
-        <GoalProgressCard goals={goals} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <ExpensesByCategoryChart data={categoryExpenses} />
-        <div className="lg:col-span-2">
-          <RecentTransactionsList
-            transactions={transactions}
-            onViewAll={() => navigate('/transactions')}
+          <TransactionForm
+            onSubmit={handleAddTransaction}
+            className="w-full"
+            loading={isAddingTransaction}
           />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          {dashboardLoading ? (
+            <Card>
+              <Skeleton active paragraph={{ rows: 6 }} />
+            </Card>
+          ) : (
+            <TransactionHistoryChart data={transactionHistory || []} />
+          )}
+        </div>
+        {goalsLoading ? (
+          <Card>
+            <Skeleton active paragraph={{ rows: 4 }} />
+          </Card>
+        ) : (
+          <GoalProgressCard goals={goals || []} />
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {dashboardLoading ? (
+          <Card>
+            <Skeleton active paragraph={{ rows: 5 }} />
+          </Card>
+        ) : (
+          <ExpensesByCategoryChart data={categoryExpenses || []} />
+        )}
+        <div className="lg:col-span-2">
+          {transactionsLoading ? (
+            <Card>
+              <Skeleton active paragraph={{ rows: 5 }} />
+            </Card>
+          ) : (
+            <RecentTransactionsList
+              transactions={transactions || []}
+              onViewAll={() => navigate('/transactions')}
+            />
+          )}
         </div>
       </div>
     </div>

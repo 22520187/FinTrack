@@ -1,5 +1,6 @@
 using AutoMapper;
 using FinTrack.Server.Repositories;
+using FinTrack.Server.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FinTrack.Server.Models.DTO;
@@ -24,7 +25,7 @@ namespace FinTrack.Server.Controllers
             _mapper = mapper;
         }
 
-        [Authorize] 
+        [Authorize]
         [HttpPost("create")]
         public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] CreateTransactionDTO createTransactionDto)
         {
@@ -46,6 +47,12 @@ namespace FinTrack.Server.Controllers
 
             transaction.UserId = userId;
 
+            // Set timezone to UTC+7 (Vietnam timezone)
+            if (!transaction.CreatedAt.HasValue)
+            {
+                transaction.CreatedAt = TimeZoneHelper.GetVietnamTime();
+            }
+
             await _categoryRepository.UpdateAsync(
                 c => c.CategoryName  == transaction.CategoryName && c.Type == transaction.Type,
                 category => {
@@ -61,7 +68,7 @@ namespace FinTrack.Server.Controllers
 
         }
 
-        [Authorize] 
+        [Authorize]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetAllTransactionByUserId()
         {

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { Spin, Skeleton } from 'antd';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import {
@@ -47,6 +48,13 @@ const Transactions = () => {
   const { toast } = useToast();
   const [params] = useSearchParams()
 
+  // Loading states
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   useEffect(() => {
     if (params.get("categoryName")) {
       setFilteredCategorieType(params.get("categoryName"))
@@ -77,87 +85,116 @@ const Transactions = () => {
 
   useEffect(() => {
     const getCategory = async () => {
-      const response = await categoryService.getAllCategory()
+      try {
+        setIsLoadingCategories(true);
+        const response = await categoryService.getAllCategory()
 
-      if (response.status !== 200) {
+        if (response.status !== 200) {
+          toast({
+            variant: "destructive",
+            title: "Fail to get category",
+            description: "Please make sure your information is correct.",
+          });
+          return;
+        }
+
+        const categories = response.data
+        setCategories(categories)
+      } catch (error) {
         toast({
           variant: "destructive",
-          title: "Fail to get category",
-          description: "Please make sure your information is correct.",
+          title: "Error loading categories",
+          description: "Something went wrong while loading categories.",
         });
-        return;
+      } finally {
+        setIsLoadingCategories(false);
       }
-
-      const categories = response.data
-
-      setCategories(categories)
     }
 
     getCategory()
   }, [])
   useEffect(() => {
     const getAllTransaction = async () => {
-      const response = await transactionService.getAllTransaction()
+      try {
+        setIsLoadingTransactions(true);
+        const response = await transactionService.getAllTransaction()
 
-      if (response.status !== 200) {
+        if (response.status !== 200) {
+          toast({
+            variant: "destructive",
+            title: "Fail to get transaction",
+            description: "Please make sure your information is correct.",
+          });
+          return;
+        }
+
+        const transactions = response.data
+        setTransactions(transactions)
+      } catch (error) {
         toast({
           variant: "destructive",
-          title: "Fail to get transaction",
-          description: "Please make sure your information is correct.",
+          title: "Error loading transactions",
+          description: "Something went wrong while loading transactions.",
         });
-        return;
+      } finally {
+        setIsLoadingTransactions(false);
       }
-
-      const transactions = response.data
-      if (params.get("categoryName")) {
-        setFilteredCategorieType(params.get("categoryName"))
-
-      }
-      setTransactions(transactions)
     }
 
     getAllTransaction()
   }, [])
 
-  const filteredTransactions = transactions.filter(transaction => {
-    console.log("transactions", transactions)
-    // Filter by type
-    if (filterType !== 'all' && transaction.type !== filterType) {
-      return false;
-    }
+  const filteredTransactions = transactions
+    .filter(transaction => {
+      // Filter by type
+      if (filterType !== 'all' && transaction.type !== filterType) {
+        return false;
+      }
 
-    // Apply search filter (case insensitive)
-    if (searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase();
-      if (!transaction.categoryName) return false
-      return (
-        transaction.categoryName.toLowerCase().includes(query) ||
-        (transaction.note && transaction.note.toLowerCase().includes(query))
-      );
-    }
+      // Apply search filter (case insensitive)
+      if (searchQuery.trim() !== '') {
+        const query = searchQuery.toLowerCase();
+        if (!transaction.categoryName) return false
+        return (
+          transaction.categoryName.toLowerCase().includes(query) ||
+          (transaction.note && transaction.note.toLowerCase().includes(query))
+        );
+      }
 
-    return true;
-  });
+      return true;
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by newest first
 
   const handleAddTransaction = async (newTransaction) => {
     console.log("newTransaction", newTransaction);
 
-    const response = await transactionService.createTransaction(newTransaction)
+    try {
+      setIsCreating(true);
+      const response = await transactionService.createTransaction(newTransaction)
 
-    if (response.status !== 200) {
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to create transaction",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
+      setTransactions(prev => [newTransaction, ...prev]);
+
+      toast({
+        title: "Transaction added",
+        description: `Your ${newTransaction.type} has been recorded successfully.`,
+      });
+    } catch (error) {
       toast({
         variant: "destructive",
-        title: "Fail to sign in account",
-        description: "Please make sure your information is correct.",
+        title: "Error creating transaction",
+        description: "Something went wrong while creating the transaction.",
       });
-      return;
+    } finally {
+      setIsCreating(false);
     }
-    setTransactions(prev => [newTransaction, ...prev]);
-
-    toast({
-      title: "Transaction added",
-      description: `Your ${newTransaction.type} has been recorded successfully.`,
-    });
   };
 
   const handleEditTransaction = (id) => {
@@ -171,27 +208,39 @@ const Transactions = () => {
 
   const handleUpdateTransaction = async (updatedTransaction) => {
     console.log("editingTransaction",editingTransaction)
-    const response = await transactionService.updateTransaction(updatedTransaction, editingTransaction.transactionId)
 
-    if (response.status !== 200) {
+    try {
+      setIsUpdating(true);
+      const response = await transactionService.updateTransaction(updatedTransaction, editingTransaction.transactionId)
+
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Fail to edit transaction",
+          description: "Please make sure your information is correct.",
+        });
+        return;
+      }
+      setTransactions(prev =>
+        prev.map(t => t.transactionId === editingTransaction.transactionId ? { ...updatedTransaction, transactionId: t.transactionId } : t)
+      );
+
+      setIsEditDialogOpen(false);
+      setEditingTransaction(null);
+
+      toast({
+        title: "Transaction updated",
+        description: "Your changes have been saved successfully.",
+      });
+    } catch (error) {
       toast({
         variant: "destructive",
-        title: "Fail to edit account",
-        description: "Please make sure your information is correct.",
+        title: "Error updating transaction",
+        description: "Something went wrong while updating the transaction.",
       });
-      return;
+    } finally {
+      setIsUpdating(false);
     }
-    setTransactions(prev =>
-      prev.map(t => t.id === editingTransaction.id ? { ...updatedTransaction, id: t.id } : t)
-    );
-
-    setIsEditDialogOpen(false);
-    setEditingTransaction(null);
-
-    toast({
-      title: "Transaction updated",
-      description: "Your changes have been saved successfully.",
-    });
   };
 
   const handleDeleteTransaction = (id) => {
@@ -200,23 +249,34 @@ const Transactions = () => {
 
   const confirmDelete = async () => {
     if (deletingId) {
-      setTransactions(prev => prev.filter(t => t.transactionId !== deletingId));
-      const response = await transactionService.deleteTransaction(deletingId)
+      try {
+        setIsDeleting(true);
+        setTransactions(prev => prev.filter(t => t.transactionId !== deletingId));
+        const response = await transactionService.deleteTransaction(deletingId)
 
-      if (response.status !== 200) {
+        if (response.status !== 200) {
+          toast({
+            variant: "destructive",
+            title: "Fail to delete transaction",
+            description: "Please make sure your information is correct.",
+          });
+          return;
+        }
+        toast({
+          title: "Transaction deleted",
+          description: "The transaction has been removed.",
+        });
+
+        setDeletingId(null);
+      } catch (error) {
         toast({
           variant: "destructive",
-          title: "Fail to delete transaction",
-          description: "Please make sure your information is correct.",
+          title: "Error deleting transaction",
+          description: "Something went wrong while deleting the transaction.",
         });
-        return;
+      } finally {
+        setIsDeleting(false);
       }
-      toast({
-        title: "Transaction deleted",
-        description: "The transaction has been removed.",
-      });
-
-      setDeletingId(null);
     }
   };
 
@@ -232,7 +292,7 @@ const Transactions = () => {
             <DialogHeader>
               <DialogTitle>Add New Transaction</DialogTitle>
             </DialogHeader>
-            <TransactionForm onSubmit={handleAddTransaction} />
+            <TransactionForm onSubmit={handleAddTransaction} loading={isCreating} />
           </DialogContent>
         </Dialog>
       </div>
@@ -260,19 +320,30 @@ const Transactions = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTransactions.length > 0 ? (
-          filteredTransactions.map(transaction => (
-            <TransactionCard
-              key={transaction.transactionId}
-              transaction={transaction}
-              onEdit={handleEditTransaction}
-              onDelete={handleDeleteTransaction}
-            />
+        {isLoadingTransactions ? (
+          // Loading skeleton
+          Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="bg-white p-6 rounded-lg border">
+              <Skeleton active paragraph={{ rows: 3 }} />
+            </div>
           ))
         ) : (
-          <div className="col-span-full py-12 text-center">
-            <p className="text-xl text-muted-foreground">No transactions found</p>
-          </div>
+          <>
+            {filteredTransactions.length > 0 ? (
+              filteredTransactions.map(transaction => (
+                <TransactionCard
+                  key={transaction.transactionId}
+                  transaction={transaction}
+                  onEdit={handleEditTransaction}
+                  onDelete={handleDeleteTransaction}
+                />
+              ))
+            ) : (
+              <div className="col-span-full py-12 text-center">
+                <p className="text-xl text-muted-foreground">No transactions found</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -287,6 +358,7 @@ const Transactions = () => {
               mode="edit"
               initialValues={editingTransaction}
               onSubmit={handleUpdateTransaction}
+              loading={isUpdating}
             />
           )}
         </DialogContent>
@@ -302,9 +374,13 @@ const Transactions = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-              Delete
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground"
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Spin size="small" /> : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

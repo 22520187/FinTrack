@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "../../lib/utils"
 
 const Input = React.forwardRef(function Input(
-  { className, type, ...props }, 
+  { className, type, ...props },
   ref
 ) {
   return (
@@ -15,7 +15,6 @@ const Input = React.forwardRef(function Input(
         "placeholder:text-black",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        "dark:border-primary-700 dark:bg-card-dark dark:text-white-smoke dark:ring-offset-card-dark dark:placeholder:text-primary-500",
         "md:text-sm",
         className
       )}

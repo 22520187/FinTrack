@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Spin } from 'antd';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -13,10 +14,6 @@ import {
 import { useEffect } from 'react';
 import categoryService from '../../services/category.service';
 
-// Mock categories
-const EXPENSE_CATEGORIES = ['Food', 'Transport', 'Housing', 'Entertainment', 'Shopping', 'Utilities', 'Health', 'Other'];
-const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Gift', 'Investment', 'Other'];
-
 const TransactionForm = ({
   onSubmit,
   initialValues = {
@@ -26,12 +23,13 @@ const TransactionForm = ({
     note: ''
   },
   mode = 'create',
-  className = ''
+  className = '',
+  loading = false
 }) => {
   const [categories, setCategories] = useState(null);
   const [amount, setAmount] = useState(initialValues.amount);
   const [type, setType] = useState(initialValues.type);
-  const [categoryName, setCategoryName] = useState(initialValues.category);
+  const [categoryName, setCategoryName] = useState(initialValues.category || '');
   const [note, setNote] = useState(initialValues.note || '');
 
   useEffect(() => {
@@ -56,11 +54,21 @@ const TransactionForm = ({
     getCategory()
   }, [])
 
+  // Reset category when type changes
+  useEffect(() => {
+    setCategoryName('');
+  }, [type])
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (amount <= 0) {
       alert('Please enter a valid amount');
+      return;
+    }
+
+    if (!categoryName || categoryName.trim() === '') {
+      alert('Please select a category');
       return;
     }
 
@@ -75,21 +83,30 @@ const TransactionForm = ({
     // Reset form if creating new transaction
     if (mode === 'create') {
       setAmount(0);
+      setCategoryName('');
       setNote('');
     }
   };
 
   return (
-    <Card className={`w-full bg-white dark:bg-card-dark ${className}`}>
+    <Card className={`w-full bg-white ${className} ${loading ? 'relative' : ''}`}>
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-10 rounded-lg">
+          <div className="flex flex-col items-center">
+            <Spin size="large" />
+            <span className="mt-2 text-sm text-gray-600">Processing transaction...</span>
+          </div>
+        </div>
+      )}
       <CardHeader className="text-left">
-        <CardTitle className="text-primary-900 dark:text-primary-100">
+        <CardTitle className="text-primary-900">
           {mode === 'create' ? 'Add New Transaction' : 'Edit Transaction'}
         </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2 text-left">
-            <label className=" text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="amount">
+            <label className=" text-sm font-medium text-primary-800" htmlFor="amount">
               Amount
             </label>
             <Input
@@ -106,7 +123,7 @@ const TransactionForm = ({
           </div>
 
           <div className="space-y-2 text-left">
-            <label className="text-sm font-medium text-primary-800 dark:text-primary-200">
+            <label className="text-sm font-medium text-primary-800">
               Transaction Type
             </label>
             <div className="flex gap-2">
@@ -139,11 +156,11 @@ const TransactionForm = ({
           </div>
 
           <div className="space-y-2 text-left">
-            <label className="text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="category">
+            <label className="text-sm font-medium text-primary-800" htmlFor="category">
               Category
             </label>
-            <Select value={categoryName} onValueChange={setCategoryName}>
-              <SelectTrigger className="mt-2 border-primary-200 dark:border-primary-700 cursor-pointer">
+            <Select value={categoryName} onValueChange={setCategoryName} required>
+              <SelectTrigger className="mt-2 border-primary-200 cursor-pointer">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
@@ -159,7 +176,7 @@ const TransactionForm = ({
           </div>
 
           <div className="space-y-2 text-left">
-            <label className="text-sm font-medium text-primary-800 dark:text-primary-200" htmlFor="note">
+            <label className="text-sm font-medium text-primary-800" htmlFor="note">
               Note (Optional)
             </label>
             <Textarea
@@ -177,8 +194,16 @@ const TransactionForm = ({
           <Button
             className="w-full bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
             type="submit"
+            disabled={loading}
           >
-            {mode === 'create' ? 'Add Transaction' : 'Update Transaction'}
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <Spin size="small" className="mr-2" />
+                {mode === 'create' ? 'Adding...' : 'Updating...'}
+              </div>
+            ) : (
+              mode === 'create' ? 'Add Transaction' : 'Update Transaction'
+            )}
           </Button>
         </CardFooter>
       </form>

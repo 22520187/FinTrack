@@ -5,13 +5,13 @@ class Http {
 
   constructor() {
     console.log("env", import.meta.env.VITE_API_URL);
-    
+
     this.api = axios.create({
       baseURL: "http://localhost:5131/api/",
       headers: {
         "Content-Type": "application/json",
       },
-      withCredentials: true, 
+      withCredentials: true,
     });
 
     // Handle unauthorized requests (e.g., session expired)

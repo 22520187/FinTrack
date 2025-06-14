@@ -110,6 +110,41 @@ namespace FinTrack.Server.Controllers
         }
 
         [Authorize]
+        [HttpPut("update/{CategoryName}")]
+        public async Task<ActionResult<CategoryDTO>> UpdateCategory(string CategoryName, [FromQuery] string Type, [FromBody] CreateCategoryDTO updateCategoryDto)
+        {
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("UserId is missing in the token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            if (updateCategoryDto == null)
+            {
+                return BadRequest("Category data is required.");
+            }
+
+            var updatedCategory = await _categoryRepository.UpdateAsync(
+                c => c.CategoryName == CategoryName && c.Type == Type && c.UserId == userId,
+                category =>
+                {
+                    category.CategoryName = updateCategoryDto.CategoryName;
+                    // Note: Type is not updated to maintain data integrity
+                }
+            );
+
+            if (updatedCategory == null)
+            {
+                return NotFound($"Category with name {CategoryName} not found.");
+            }
+
+            var categoryResponse = _mapper.Map<CategoryDTO>(updatedCategory);
+            return Ok(categoryResponse);
+        }
+
+        [Authorize]
         [HttpDelete("delete/{CategoryName}")]
         public async Task<ActionResult> DeleteCategory(string CategoryName, [FromQuery] string Type)
         {
