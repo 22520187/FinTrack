@@ -3,7 +3,7 @@ using FinTrack.Server.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HealthBuddy.Server.Controllers
+namespace FinTrack.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

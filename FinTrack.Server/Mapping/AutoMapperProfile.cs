@@ -5,7 +5,7 @@ using BCrypt.Net;
 using FinTrack.Server.Models.ResponseModels;
 
 
-namespace HealthBuddy.Server.Mapping
+namespace FinTrack.Server.Mapping
 {
     public class AutoMapperProfile : Profile
     {
@@ -43,6 +43,8 @@ namespace HealthBuddy.Server.Mapping
             CreateMap<GoalProgressDTO, GoalProgress>();
             CreateMap<GoalProgress, CreateGoalProgressDTO>();
             CreateMap<CreateGoalProgressDTO, GoalProgress>();
+            CreateMap<Report, ReportDTO>();
+            CreateMap<ReportDTO, Report>();
 
         }
     }

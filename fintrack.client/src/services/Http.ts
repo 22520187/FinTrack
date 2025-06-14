@@ -4,7 +4,7 @@ class Http {
   private api: AxiosInstance;
 
   constructor() {
-    console.log("env", import.meta.env.VITE_API_URL);
+    
 
     this.api = axios.create({
       baseURL: "http://localhost:5131/api/",
@@ -14,13 +14,31 @@ class Http {
       withCredentials: true,
     });
 
+    // Add request interceptor to include token
+    this.api.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
     // Handle unauthorized requests (e.g., session expired)
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
         if (error.response?.status === 401) {
           console.warn("Session expired. Redirecting to login...");
-          window.location.href = "/login"; // Redirect user to login page
+          // Clear localStorage
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          // Redirect user to login page
+          window.location.href = "/login";
         }
         return Promise.reject(error);
       }

@@ -145,8 +145,8 @@ namespace FinTrack.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("update-info")]
-        public async Task<ActionResult<AuthResponse>> UpdateInfo(UpdateUserInfoRequest request)
+        [HttpPut("update-info/{userId}")]
+        public async Task<ActionResult<AuthResponse>> UpdateInfo(int userId, [FromBody] UpdateUserInfoRequest request)
         {
             // Get user ID from token
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
@@ -159,7 +159,7 @@ namespace FinTrack.Server.Controllers
                 });
             }
 
-            int userId = int.Parse(userIdClaim.Value);
+            int tokenUserId = int.Parse(userIdClaim.Value);
 
             // Verify user exists
             var user = await _userRepository.GetByIdAsync(u => u.UserId == userId);
@@ -173,7 +173,7 @@ namespace FinTrack.Server.Controllers
             }
 
             // Check if the user is trying to update their own profile
-            if (userId != request.UserId)
+            if (tokenUserId != userId)
             {
                 return Unauthorized(new AuthResponse
                 {
@@ -188,7 +188,6 @@ namespace FinTrack.Server.Controllers
                 u =>
                 {
                     u.FullName = request.FullName;
-                    u.Email = request.Email;
                     u.Phone = request.Phone;
                     u.City = request.City;
                     u.District = request.District;

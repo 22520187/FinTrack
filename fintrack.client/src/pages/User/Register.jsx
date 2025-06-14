@@ -51,14 +51,21 @@ const Register = () => {
         return;
       }
 
+      // Store token and user data in localStorage
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+      if (response.data.user) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
 
       toast({
         title: "Registration successful",
         description: "Welcome to MoneyMind! You can now log in.",
       });
 
-      // Redirect to login
-      window.location.href = '/login';
+      // Redirect to dashboard instead of login since user is now authenticated
+      window.location.href = '/';
     } catch (error) {
       toast({
         variant: "destructive",

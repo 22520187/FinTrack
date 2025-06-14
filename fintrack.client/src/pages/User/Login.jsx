@@ -38,6 +38,14 @@ const Login = () => {
         return;
       }
       
+      // Store token and user data in localStorage
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+      if (response.data.user) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+      
       toast({
         title: "Login successful",
         description: "Welcome back to FinTrack!",
