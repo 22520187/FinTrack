@@ -35,23 +35,17 @@ const Settings = () => {
 
   // Fetch user data on component mount
   useEffect(() => {
-    // In a real application, you would fetch the user data from the server
-    // For now, we'll use mock data
-    // This would be replaced with an API call to get the current user's profile
-
-    // Mock user data for demonstration
-    const userData = {
-      userId: 1,
-      fullName: 'Khanh Dang',
-      email: '22520187@gm.uit.edu.vn',
-      phone: '123456789',
-      city: 'An Giang',
-      district: 'Huyện Chợ Mới',
-      ward: 'Xã Nhơn Mỹ'
-    };
-
-    setUserProfile(userData);
-    setEditedProfile(userData);
+    // Get user data from localStorage
+    const userData = authService.getCurrentUser();
+    
+    if (userData) {
+      setUserProfile(userData);
+      setEditedProfile(userData);
+    } else {
+      // If no user data, redirect to login
+      window.location.href = '/login';
+    }
+    
     setIsLoading(false);
   }, []);
 
@@ -344,13 +338,8 @@ const Settings = () => {
                   variant="outline"
                   className="flex items-center gap-2 text-red-500 border-red-500 hover:bg-red-50 cursor-pointer"
                   onClick={() => {
-                    // Here you would handle logout
-                    toast({
-                      title: "Logging out",
-                      description: "You have been logged out successfully.",
-                    });
-                    // Redirect to login page
-                    // window.location.href = '/login';
+                    // Handle logout
+                    authService.logout();
                   }}
                 >
                   <LogOut size={16} />

@@ -1,4 +1,4 @@
-using HealthBuddy.Server.Mapping;
+using FinTrack.Server.Mapping;
 using Microsoft.EntityFrameworkCore;
 using FinTrack.Server.Models;
 using FinTrack.Server.Repositories;
