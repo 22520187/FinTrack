@@ -25,91 +25,273 @@ namespace FinTrack.Server.Controllers
 
         [Authorize]
         [HttpGet("financial-summary")]
-        public async Task<ActionResult> GetFinancialSummary([FromQuery] string period = "year")
+        public async Task<ActionResult> GetFinancialSummary([FromQuery] string period = "year", [FromQuery] string startDate = null, [FromQuery] string endDate = null)
         {
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
+            try
             {
-                return Unauthorized("UserId is missing in the token.");
+                var userIdResult = GetUserIdFromToken();
+                if (userIdResult.IsFailure)
+                {
+                    return userIdResult.ErrorResult;
+                }
+
+                var dateRangeResult = ParseDateRange(period, startDate, endDate);
+                if (dateRangeResult.IsFailure)
+                {
+                    return dateRangeResult.ErrorResult;
+                }
+
+                var summary = await _reportRepository.GetFinancialSummaryAsync(userIdResult.UserId, dateRangeResult.StartDate, dateRangeResult.EndDate);
+                return Ok(summary);
             }
-
-            int userId = int.Parse(userIdClaim.Value);
-
-            // Caculate date range based on the period
-            DateTime startDate = GetStartDateFromPeriod(period);
-            DateTime endDate = DateTime.Now;
-
-            var sumary = await _reportRepository.GetFinancialSummaryAsync(userId, startDate, endDate);
-            return Ok(sumary);
-        }
-
-        private DateTime GetStartDateFromPeriod(string period)
-        {
-            return period switch
+            catch (Exception ex)
             {
-                "month" => DateTime.Now.AddMonths(-1),
-                "quarter" => DateTime.Now.AddMonths(-3),
-                "halfYear" => DateTime.Now.AddMonths(-6),
-                "year" => DateTime.Now.AddYears(-1),
-                _ => DateTime.Now.AddYears(-1)
-            };
+                return StatusCode(500, new { message = "An error occurred while getting financial summary.", error = ex.Message });
+            }
         }
 
         [Authorize]
         [HttpGet("category-expenses")]
-        public async Task<ActionResult> GetCategoryExpenses([FromQuery] string period = "year")
+        public async Task<ActionResult> GetCategoryExpenses([FromQuery] string period = "year", [FromQuery] string startDate = null, [FromQuery] string endDate = null)
         {
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
+            try
             {
-                return Unauthorized("UserId is missing in the token.");
+                var userIdResult = GetUserIdFromToken();
+                if (userIdResult.IsFailure)
+                {
+                    return userIdResult.ErrorResult;
+                }
+
+                var dateRangeResult = ParseDateRange(period, startDate, endDate);
+                if (dateRangeResult.IsFailure)
+                {
+                    return dateRangeResult.ErrorResult;
+                }
+
+                var categoryExpenses = await _reportRepository.GetCategoryExpensesAsync(userIdResult.UserId, dateRangeResult.StartDate, dateRangeResult.EndDate);
+                return Ok(categoryExpenses);
             }
-
-            int userId = int.Parse(userIdClaim.Value);
-
-            // Caculate date range based on the period
-            DateTime startDate = GetStartDateFromPeriod(period);
-            DateTime endDate = DateTime.Now;
-
-            var categoryExpenses = await _reportRepository.GetCategoryExpensesAsync(userId, startDate, endDate);
-            return Ok(categoryExpenses);
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while getting category expenses.", error = ex.Message });
+            }
         }
 
         [Authorize]
         [HttpPost("generate")]
-        public async Task<ActionResult> GenerateReport([FromQuery] string period = "year", [FromQuery] string format = "pdf")
+        public async Task<ActionResult> GenerateReport([FromQuery] string period = "year", [FromQuery] string format = "pdf", [FromQuery] string startDate = null, [FromQuery] string endDate = null)
         {
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
+            try
             {
-                return Unauthorized("UserId is missing in the token.");
-            }
+                var userIdResult = GetUserIdFromToken();
+                if (userIdResult.IsFailure)
+                {
+                    return userIdResult.ErrorResult;
+                }
 
-            int userId = int.Parse(userIdClaim.Value);
-            
-            // Generate report
-            string fileName = await _reportRepository.GenerateAndSaveReportAsync(userId, "Financial", period, format);
-            
-            // In a real implementation, this would return the actual file
-            // For now, we'll just return the filename
-            return Ok(new { fileName });
+                string reportPeriod = BuildReportPeriod(period, startDate, endDate);
+                string fileName = await _reportRepository.GenerateAndSaveReportAsync(userIdResult.UserId, "Financial", reportPeriod, format);
+
+                return Ok(new { fileName });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while generating report.", error = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("download/{fileName}")]
+        public async Task<ActionResult> DownloadReport(string fileName)
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromToken();
+                if (userIdResult.IsFailure)
+                {
+                    return userIdResult.ErrorResult;
+                }
+
+                // Verify the file belongs to the user
+                var report = await _reportRepository.GetByIdAsync(r => r.FileUrl == fileName && r.UserId == userIdResult.UserId);
+                if (report == null)
+                {
+                    return NotFound("Report not found or access denied.");
+                }
+
+                // Get the file path
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string reportsDirectory = Path.Combine(baseDirectory, "reports");
+                string filePath = Path.Combine(reportsDirectory, fileName);
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound("File not found on server.");
+                }
+
+                // Determine content type
+                string contentType = GetContentType(fileName);
+
+                // Read file and return
+                var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                return File(fileBytes, contentType, fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while downloading the file.", error = ex.Message });
+            }
         }
 
         [Authorize]
         [HttpGet("history")]
         public async Task<ActionResult> GetReportHistory()
         {
+            try
+            {
+                var userIdResult = GetUserIdFromToken();
+                if (userIdResult.IsFailure)
+                {
+                    return userIdResult.ErrorResult;
+                }
+
+                var reports = await _reportRepository.GetByUserIdAsync(userIdResult.UserId);
+                var reportDTOs = _mapper.Map<List<ReportDTO>>(reports);
+                return Ok(reportDTOs);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while getting report history.", error = ex.Message });
+            }
+        }
+
+        #region Helper Methods
+        private UserIdResult GetUserIdFromToken()
+        {
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
-                return Unauthorized("UserId is missing in the token.");
+                return UserIdResult.Failure(Unauthorized("UserId is missing in the token."));
             }
 
-            int userId = int.Parse(userIdClaim.Value);
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return UserIdResult.Failure(BadRequest("Invalid user ID format."));
+            }
 
-            var reports = await _reportRepository.GetByUserIdAsync(userId);
-            var reportDTOs = _mapper.Map<List<ReportDTO>>(reports);
-            return Ok(reportDTOs);
+            return UserIdResult.Success(userId);
         }
+
+        private DateRangeResult ParseDateRange(string period, string startDate, string endDate)
+        {
+            DateTime startDateTime;
+            DateTime endDateTime;
+
+            if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+            {
+                if (!DateTime.TryParse(startDate, out startDateTime) || !DateTime.TryParse(endDate, out endDateTime))
+                {
+                    return DateRangeResult.Failure(BadRequest("Invalid date format. Please use YYYY-MM-DD format."));
+                }
+
+                endDateTime = endDateTime.Date.AddDays(1).AddTicks(-1);
+            }
+            else
+            {
+                startDateTime = GetStartDateFromPeriod(period);
+                endDateTime = DateTime.Now;
+
+                if (int.TryParse(period, out int year))
+                {
+                    endDateTime = new DateTime(year, 12, 31, 23, 59, 59);
+                }
+            }
+
+            return DateRangeResult.Success(startDateTime, endDateTime);
+        }
+
+        private DateTime GetStartDateFromPeriod(string period)
+        {
+            if (int.TryParse(period, out int year))
+            {
+                return new DateTime(year, 1, 1);
+            }
+
+            return period.ToLower() switch
+            {
+                "month" => DateTime.Now.AddMonths(-1),
+                "quarter" => DateTime.Now.AddMonths(-3),
+                "halfyear" => DateTime.Now.AddMonths(-6),
+                "year" => DateTime.Now.AddMonths(-12),
+                "last12months" => DateTime.Now.AddMonths(-12),
+                _ => DateTime.Now.AddMonths(-12)
+            };
+        }
+
+        private string BuildReportPeriod(string period, string startDate, string endDate)
+        {
+            if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+            {
+                if (DateTime.TryParse(startDate, out DateTime parsedStartDate) && DateTime.TryParse(endDate, out DateTime parsedEndDate))
+                {
+                    return $"{parsedStartDate:yyyy-MM-dd}_to_{parsedEndDate:yyyy-MM-dd}";
+                }
+                else
+                {
+                    return $"{startDate}_to_{endDate}";
+                }
+            }
+
+            return period;
+        }
+
+        private string GetContentType(string fileName)
+        {
+            return Path.GetExtension(fileName).ToLower() switch
+            {
+                ".pdf" => "application/pdf",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                _ => "application/octet-stream"
+            };
+        }
+        #endregion
+
+        #region Result Classes
+        private class UserIdResult
+        {
+            public bool IsFailure { get; private set; }
+            public int UserId { get; private set; }
+            public ActionResult ErrorResult { get; private set; }
+
+            private UserIdResult(bool isFailure, int userId, ActionResult errorResult)
+            {
+                IsFailure = isFailure;
+                UserId = userId;
+                ErrorResult = errorResult;
+            }
+
+            public static UserIdResult Success(int userId) => new(false, userId, null);
+            public static UserIdResult Failure(ActionResult errorResult) => new(true, 0, errorResult);
+        }
+
+        private class DateRangeResult
+        {
+            public bool IsFailure { get; private set; }
+            public DateTime StartDate { get; private set; }
+            public DateTime EndDate { get; private set; }
+            public ActionResult ErrorResult { get; private set; }
+
+            private DateRangeResult(bool isFailure, DateTime startDate, DateTime endDate, ActionResult errorResult)
+            {
+                IsFailure = isFailure;
+                StartDate = startDate;
+                EndDate = endDate;
+                ErrorResult = errorResult;
+            }
+
+            public static DateRangeResult Success(DateTime startDate, DateTime endDate) => new(false, startDate, endDate, null);
+            public static DateRangeResult Failure(ActionResult errorResult) => new(true, DateTime.MinValue, DateTime.MinValue, errorResult);
+        }
+        #endregion
     }
 }
+

@@ -1,15 +1,37 @@
-
 import { useState } from 'react';
-import { Menu, X, Settings } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Menu, X, User } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "../ui/button";
+import authService from '../../services/auth.service';
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  
+  const isAuthenticated = authService.isAuthenticated();
+  
+  const handleUserIconClick = () => {
+    if (isAuthenticated) {
+      navigate('/settings');
+    } else {
+      navigate('/login');
+    }
+  };
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const navigationItems = [
+    { to: "/", label: "Dashboard" },
+    { to: "/transactions", label: "Transactions" },
+    { to: "/categories", label: "Categories" },
+    { to: "/goals", label: "Goals" },
+    { to: "/reports", label: "Reports" }
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-primary-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container flex h-16 items-center justify-between">
+        {/* Logo */}
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <span className="hidden font-bold text-xl text-primary-700 sm:inline-block">FinTrack</span>
@@ -18,44 +40,32 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
-            Dashboard
-          </Link>
-          <Link to="/transactions" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
-            Transactions
-          </Link>
-          <Link to="/categories" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
-            Categories
-          </Link>
-          <Link to="/goals" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
-            Goals
-          </Link>
-          <Link to="/reports" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
-            Reports
-          </Link>
-          <Link to="/settings" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
-            Settings
-          </Link>
+          {navigationItems.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="text-sm font-medium text-ebony transition-colors hover:text-primary-600"
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Login</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/register">Register</Link>
-            </Button>
-          </div>
-          {/* Avatar (shown when logged in) */}
-          {/* <Avatar className="h-8 w-8">
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar> */}
+          {/* User Icon */}
+          <button
+            onClick={handleUserIconClick}
+            className="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-primary-100 hover:bg-primary-200 transition-colors cursor-pointer"
+            title={isAuthenticated ? "Go to Settings" : "Login"}
+          >
+            <User size={20} className="text-primary-700" />
+          </button>
 
           {/* Mobile Menu Button */}
           <button
             className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -66,53 +76,35 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <div className="fixed inset-0 top-16 z-50 grid gap-2 bg-white p-6 shadow-lg animate-in slide-in-from-top-5 md:hidden">
           <nav className="grid gap-4">
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
-              onClick={() => setMobileMenuOpen(false)}
+            {navigationItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
+                onClick={closeMobileMenu}
+              >
+                {item.label}
+              </Link>
+            ))}
+            
+            <button
+              onClick={() => {
+                handleUserIconClick();
+                closeMobileMenu();
+              }}
+              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600 text-left"
             >
-              Dashboard
-            </Link>
-            <Link
-              to="/transactions"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Transactions
-            </Link>
-            <Link
-              to="/categories"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Categories
-            </Link>
-            <Link to="/goals" className="text-sm font-medium text-ebony transition-colors hover:text-primary-600">
-            Goals
-          </Link>
-            <Link
-              to="/reports"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Reports
-            </Link>
-            <Link
-              to="/settings"
-              className="flex items-center gap-2 text-lg font-semibold text-ebony hover:text-primary-600"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Settings className="h-5 w-5" />
-              Settings
-            </Link>
-            <div className="flex flex-col gap-2 mt-4">
-              <Button variant="outline" asChild>
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/register" onClick={() => setMobileMenuOpen(false)}>Register</Link>
-              </Button>
-            </div>
+              <User className="h-5 w-5" />
+              {isAuthenticated ? "Settings" : "Login"}
+            </button>
+            
+            {!isAuthenticated && (
+              <div className="flex flex-col gap-2 mt-4">
+                <Button variant="outline" asChild>
+                  <Link to="/register" onClick={closeMobileMenu}>Register</Link>
+                </Button>
+              </div>
+            )}
           </nav>
         </div>
       )}

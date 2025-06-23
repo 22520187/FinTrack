@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using FinTrack.Server.Middleware;
 using System.Text;
+using FinTrack.Server.Services;
 
 
 // using var context = new FinTrackDbContext();
@@ -56,7 +57,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 
 
 builder.Services.AddScoped(typeof(IFinTrackRepository<>), typeof(FinTrackRepository<>));
-builder.Services.AddHttpClient();  // Đăng ký IHttpClientFactory
+builder.Services.AddHttpClient();  
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -70,11 +71,11 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
-    options.Cookie.HttpOnly = true; // ✅ Enable HTTP-only cookies
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ✅ Use HTTPS only
-    options.Cookie.SameSite = SameSiteMode.None; // Adjust based on CORS settings
-    options.Cookie.IsEssential = true; // Ensure the cookie isn't blocked by privacy settings
-    options.LoginPath = "/api/auth/login"; // Redirect unauthorized users to login
+    options.Cookie.HttpOnly = true; 
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
+    options.Cookie.SameSite = SameSiteMode.None; 
+    options.Cookie.IsEssential = true; 
+    options.LoginPath = "/api/auth/login"; 
     options.LogoutPath = "/api/auth/logout";
 })
 .AddJwtBearer(options =>
@@ -92,8 +93,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddScoped<ReportGenerationService>();
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
