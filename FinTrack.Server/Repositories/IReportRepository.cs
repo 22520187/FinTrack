@@ -8,7 +8,7 @@ namespace FinTrack.Server.Repositories
     public interface IReportRepository : IFinTrackRepository<Report>
     {
         Task<FinancialSumaryDTO> GetFinancialSummaryAsync(int userId, DateTime startDate, DateTime endDate);
-        Task<List<CategoryExpenseDTO>> GetCategoryExpensesAsync(int userId, DateTime startDate, DateTime endDate);
+        Task<List<ReportCategoryExpenseDTO>> GetCategoryExpensesAsync(int userId, DateTime startDate, DateTime endDate);
         Task<string> GenerateAndSaveReportAsync(int userId, string type, string period, string format);
     }
 }

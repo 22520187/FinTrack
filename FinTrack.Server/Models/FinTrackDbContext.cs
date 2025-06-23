@@ -141,7 +141,7 @@ public partial class FinTrackDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.FileUrl).HasMaxLength(512);
-            entity.Property(e => e.Period).HasMaxLength(10);
+            entity.Property(e => e.Period).HasMaxLength(100);
             entity.Property(e => e.Type).HasMaxLength(50);
             entity.Property(e => e.UserId).HasColumnName("UserID");
 

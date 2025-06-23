@@ -9,13 +9,21 @@ import {
 } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
 import { useToast } from '../../hooks/use-toast';
 import authService from '../../services/auth.service';
 
 const Settings = () => {
   const { toast } = useToast();
 
-  // User profile state
+  const apiKey = "a84f0896-7c1a-11ef-8e53-0a00184fe694";
+
   const [userProfile, setUserProfile] = useState({
     userId: 0,
     fullName: '',
@@ -26,28 +34,144 @@ const Settings = () => {
     ward: ''
   });
 
-  // Editing state
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState({...userProfile});
 
-  // Loading state for initial data fetch
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user data on component mount
   useEffect(() => {
-    // Get user data from localStorage
     const userData = authService.getCurrentUser();
     
     if (userData) {
       setUserProfile(userData);
       setEditedProfile(userData);
     } else {
-      // If no user data, redirect to login
       window.location.href = '/login';
     }
     
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch(
+          "https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Token: apiKey,
+            },
+          }
+        );
+        const data = await response.json();
+
+        if (data && data.data) {
+          setCities(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load cities",
+        });
+      }
+    };
+
+    fetchCities();
+  }, []);
+
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      if (!editedProfile.city) {
+        setDistricts([]);
+        setWards([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Token: apiKey,
+            },
+            body: JSON.stringify({
+              province_id: parseInt(editedProfile.city),
+            }),
+          }
+        );
+        const data = await response.json();
+
+        if (data && data.data) {
+          setDistricts(data.data);
+          setEditedProfile(prev => ({ ...prev, district: '', ward: '' }));
+          setWards([]);
+        }
+      } catch (error) {
+        console.error("Error fetching districts:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load districts",
+        });
+      }
+    };
+
+    if (isEditing) {
+      fetchDistricts();
+    }
+  }, [editedProfile.city, isEditing]);
+
+  useEffect(() => {
+    const fetchWards = async () => {
+      if (!editedProfile.district) {
+        setWards([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Token: apiKey,
+            },
+            body: JSON.stringify({
+              district_id: parseInt(editedProfile.district),
+            }),
+          }
+        );
+        const data = await response.json();
+
+        if (data && data.data) {
+          setWards(data.data);
+          setEditedProfile(prev => ({ ...prev, ward: '' }));
+        }
+      } catch (error) {
+        console.error("Error fetching wards:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load wards",
+        });
+      }
+    };
+
+    if (isEditing) {
+      fetchWards();
+    }
+  }, [editedProfile.district, isEditing]);
 
   // Password state
   const [passwordData, setPasswordData] = useState({
@@ -56,16 +180,13 @@ const Settings = () => {
     confirmPassword: '',
   });
 
-  // Show/hide password toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Loading states
   const [isProfileUpdating, setIsProfileUpdating] = useState(false);
   const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
 
-  // Handle profile form changes
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setEditedProfile(prev => ({
@@ -79,23 +200,20 @@ const Settings = () => {
     setIsProfileUpdating(true);
 
     try {
-      // Prepare data for API call - remove email as it's not updated
       const updateData = {
         fullName: editedProfile.fullName,
         phone: editedProfile.phone,
-        city: editedProfile.city,
-        district: editedProfile.district,
-        ward: editedProfile.ward
+        city: cities.find(city => city.ProvinceID.toString() === editedProfile.city)?.ProvinceName || editedProfile.city,
+        district: districts.find(district => district.DistrictID.toString() === editedProfile.district)?.DistrictName || editedProfile.district,
+        ward: wards.find(ward => ward.WardCode === editedProfile.ward)?.WardName || editedProfile.ward
       };
 
-      // Call the API to update the user profile
       const response = await authService.updateUserInfo(userProfile.userId, updateData);
 
       if (response.status !== 200) {
         throw new Error("Failed to update profile");
       }
 
-      // Update local state with the response data
       const updatedUser = response.data.user;
       setUserProfile(updatedUser);
       setIsEditing(false);
@@ -149,7 +267,6 @@ const Settings = () => {
         newPassword: passwordData.newPassword
       };
 
-      // Call the API to change the password
       const response = await authService.forgetPassword(changePasswordData);
 
       if (response.status !== 200) {
@@ -161,7 +278,6 @@ const Settings = () => {
         description: "Your password has been changed successfully.",
       });
 
-      // Reset password fields
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -233,30 +349,77 @@ const Settings = () => {
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">City</label>
-                    <Input
-                      name="city"
+                    <Select
                       value={editedProfile.city}
-                      onChange={handleProfileChange}
-                      className="mt-1"
-                    />
+                      onValueChange={(value) => {
+                        setEditedProfile(prev => ({ 
+                          ...prev, 
+                          city: value,
+                          district: '',
+                          ward: ''
+                        }));
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select a city" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cities.map((city) => (
+                          <SelectItem key={city.ProvinceID} value={city.ProvinceID.toString()}>
+                            {city.ProvinceName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">District</label>
-                    <Input
-                      name="district"
+                    <Select
                       value={editedProfile.district}
-                      onChange={handleProfileChange}
-                      className="mt-1"
-                    />
+                      onValueChange={(value) => {
+                        setEditedProfile(prev => ({ 
+                          ...prev, 
+                          district: value,
+                          ward: ''
+                        }));
+                      }}
+                      disabled={!editedProfile.city}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select a district" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {districts.map((district) => (
+                          <SelectItem key={district.DistrictID} value={district.DistrictID.toString()}>
+                            {district.DistrictName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">Ward</label>
-                    <Input
-                      name="ward"
+                    <Select
                       value={editedProfile.ward}
-                      onChange={handleProfileChange}
-                      className="mt-1"
-                    />
+                      onValueChange={(value) => {
+                        setEditedProfile(prev => ({ 
+                          ...prev, 
+                          ward: value
+                        }));
+                      }}
+                      disabled={!editedProfile.district}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select a ward" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {wards.map((ward) => (
+                          <SelectItem key={ward.WardCode} value={ward.WardCode}>
+                            {ward.WardName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               ) : (
@@ -276,15 +439,21 @@ const Settings = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">City</p>
-                    <p className="font-medium">{userProfile.city}</p>
+                    <p className="font-medium">
+                      {cities.find(city => city.ProvinceID.toString() === userProfile.city)?.ProvinceName || userProfile.city}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">District</p>
-                    <p className="font-medium">{userProfile.district}</p>
+                    <p className="font-medium">
+                      {districts.find(district => district.DistrictID.toString() === userProfile.district)?.DistrictName || userProfile.district}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Ward</p>
-                    <p className="font-medium">{userProfile.ward}</p>
+                    <p className="font-medium">
+                      {wards.find(ward => ward.WardCode === userProfile.ward)?.WardName || userProfile.ward}
+                    </p>
                   </div>
                 </>
               )}
