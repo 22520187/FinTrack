@@ -29,7 +29,7 @@ namespace FinTrack.Server.Controllers
         [HttpPost("create")]
         public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] CreateTransactionDTO createTransactionDto)
         {
-
+            logger.LogInformation("CreateTransaction called with DTO: {@CreateTransactionDto}", createTransactionDto);
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
@@ -50,7 +50,8 @@ namespace FinTrack.Server.Controllers
             // Set timezone to UTC+7 (Vietnam timezone)
             if (!transaction.CreatedAt.HasValue)
             {
-                transaction.CreatedAt = TimeZoneHelper.GetVietnamTime();
+                transaction.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+                logger.LogInformation($"CreatedAt was not provided, setting to Vietnam time: {transaction.CreatedAt}");
             }
 
             await _categoryRepository.UpdateAsync(

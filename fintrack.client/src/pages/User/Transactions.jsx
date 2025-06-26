@@ -144,6 +144,27 @@ const Transactions = () => {
     getAllTransaction()
   }, [])
 
+  function toVietnamTime(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    // Get UTC+7 offset in minutes
+    const vietnamOffset = 7 * 60;
+    // Get local offset in minutes
+    const localOffset = date.getTimezoneOffset();
+    // Calculate the difference and add to the date
+    const diff = vietnamOffset + localOffset;
+    const vietnamDate = new Date(date.getTime() + diff * 60000);
+    // Format as you like, e.g. 'YYYY-MM-DD HH:mm'
+    return vietnamDate.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  }
+
   const filteredTransactions = transactions
     .filter(transaction => {
       // Filter by type
@@ -198,7 +219,7 @@ const Transactions = () => {
   };
 
   const handleEditTransaction = (id) => {
-    console.log("id",id)
+    console.log("id", id)
     const transaction = transactions.find(t => t.transactionId === id);
     if (transaction) {
       setEditingTransaction(transaction);
@@ -207,7 +228,7 @@ const Transactions = () => {
   };
 
   const handleUpdateTransaction = async (updatedTransaction) => {
-    console.log("editingTransaction",editingTransaction)
+    console.log("editingTransaction", editingTransaction)
 
     try {
       setIsUpdating(true);
