@@ -34,7 +34,7 @@ const Navbar = () => {
         {/* Logo */}
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <span className="hidden font-bold text-xl text-primary-700 sm:inline-block">FinTrack</span>
+            <span className="hidden font-bold text-3xl text-primary-700 sm:inline-block">FinTrack</span>
           </Link>
         </div>
 
