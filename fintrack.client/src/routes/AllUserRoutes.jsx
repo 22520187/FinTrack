@@ -23,6 +23,8 @@ import Goals from "../pages/User/Goals";
 import Settings from "../pages/User/Settings";
 import Login from "../pages/User/Login";
 import Register from "../pages/User/Register";
+import Privacy from "../pages/User/Privacy";
+import Terms from "../pages/User/Terms";
 
 
 function AllUserRoutes() {
@@ -41,6 +43,8 @@ function AllUserRoutes() {
       </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
     </Routes>
   );
 }
