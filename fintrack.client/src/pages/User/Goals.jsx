@@ -1,75 +1,44 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Target, Trophy } from 'lucide-react';
 import { Button } from '../../components/ui/button';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from '../../components/ui/dialog';
 import { toast } from '../../hooks/use-toast';
+import { useGoals } from '../../hooks/useAPI';
 import GoalCard from '../../components/goals/GoalCard';
 import GoalForm from '../../components/goals/GoalForm';
 
-// Mock data
-const mockGoals = [
-  {
-    id: '1',
-    name: 'Save for a new laptop',
-    targetAmount: 1200,
-    currentAmount: 500,
-    deadline: new Date(2023, 10, 1),
-    category: 'Electronics',
-    note: 'Want to buy a MacBook Pro',
-    createdAt: new Date(2023, 5, 15)
-  },
-  {
-    id: '2',
-    name: 'Emergency fund',
-    targetAmount: 5000,
-    currentAmount: 2000,
-    deadline: new Date(2023, 12, 31),
-    category: 'Savings',
-    createdAt: new Date(2023, 4, 20)
-  },
-  {
-    id: '3',
-    name: 'Vacation trip',
-    targetAmount: 3000,
-    currentAmount: 1200,
-    deadline: new Date(2024, 6, 15),
-    category: 'Travel',
-    note: 'Summer vacation to Europe',
-    createdAt: new Date(2023, 5, 1)
-  }
-];
-
 const Goals = () => {
-  const [goals, setGoals] = useState([]);
+  const { goals, loading, error, createGoal, updateGoal, deleteGoal, addProgress } = useGoals();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Use useCallback for handlers to prevent unnecessary re-renders
-  const handleAddGoal = useCallback((newGoal) => {
-    // Generate a unique ID for the new goal
-    const goalWithId = {
-      ...newGoal,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      currentAmount: 0
-    };
-    
-    setGoals(prev => [...prev, goalWithId]);
-    setIsAddDialogOpen(false);
-    
-    toast({
-      title: "Goal created",
-      description: "Your new goal has been added successfully."
-    });
-  }, []);
+  const handleAddGoal = useCallback(async (newGoal) => {
+    try {
+      console.log("newGoal",newGoal)
+      await createGoal(newGoal);
+      setIsAddDialogOpen(false);
+
+      toast({
+        title: "Goal created",
+        description: "Your new goal has been added successfully."
+      });
+    } catch (error) {
+      console.error("Error creating goal:", error);
+      toast({
+        variant: "destructive",
+        title: "Creation failed",
+        description: "There was a problem creating your goal."
+      });
+    }
+  }, [createGoal]);
 
   const handleEditGoal = useCallback((id) => {
     const goal = goals.find(g => g.id === id);
@@ -79,25 +48,14 @@ const Goals = () => {
     }
   }, [goals]);
 
-  const handleUpdateGoal = useCallback((updatedGoal) => {
+  const handleUpdateGoal = useCallback(async (updatedGoal) => {
     if (!editingGoal) return;
-    
+
     try {
-      setGoals(prev => 
-        prev.map(g => g.id === editingGoal.id ? { 
-          ...updatedGoal, 
-          id: g.id, 
-          createdAt: g.createdAt,
-          // Ensure deadline is properly handled
-          deadline: updatedGoal.deadline instanceof Date ? 
-            updatedGoal.deadline : 
-            new Date(updatedGoal.deadline)
-        } : g)
-      );
-      
+      await updateGoal(editingGoal.id, updatedGoal);
       setIsEditDialogOpen(false);
       setEditingGoal(null);
-      
+
       toast({
         title: "Goal updated",
         description: "Your changes have been saved successfully."
@@ -110,12 +68,12 @@ const Goals = () => {
         description: "There was a problem updating your goal."
       });
     }
-  }, [editingGoal]);
+  }, [editingGoal, updateGoal]);
 
-  const handleDeleteGoal = useCallback((id) => {
+  const handleDeleteGoal = useCallback(async (id) => {
     try {
-      setGoals(prev => prev.filter(g => g.id !== id));
-      
+      await deleteGoal(id);
+
       toast({
         title: "Goal deleted",
         description: "The goal has been removed."
@@ -128,17 +86,12 @@ const Goals = () => {
         description: "There was a problem deleting your goal."
       });
     }
-  }, []);
+  }, [deleteGoal]);
 
-  const handleUpdateProgress = useCallback((id, amount) => {
+  const handleUpdateProgress = useCallback(async (id, amount) => {
     try {
-      setGoals(prev => 
-        prev.map(g => g.id === id ? { 
-          ...g, 
-          currentAmount: Math.min(g.targetAmount, g.currentAmount + amount) 
-        } : g)
-      );
-      
+      await addProgress(id, { savedAmount: amount });
+
       toast({
         title: "Progress updated",
         description: `Added $${amount} to your goal progress.`
@@ -151,13 +104,35 @@ const Goals = () => {
         description: "There was a problem updating your progress."
       });
     }
-  }, []);
+  }, [addProgress]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your goals...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading goals: {error}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <h1 className="text-3xl font-bold mb-4 sm:mb-0">Financial Goals</h1>
-        <Dialog>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 cursor-pointer">
               <Target size={18} />

@@ -68,8 +68,8 @@ export const useGoals = () => {
         name: goal.title,
         targetAmount: goal.targetAmount,
         currentAmount: goal.savedAmount || 0,
-        deadline: new Date(goal.deadline),
-        createdAt: goal.createdAt,
+        deadline: new Date(goal.deadline + 'T00:00:00'), // Add time to DateOnly format
+        createdAt: new Date(goal.createdAt),
         progressPercentage: goal.progressPercentage,
         isCompleted: goal.isCompleted
       }));
@@ -102,8 +102,8 @@ export const useGoals = () => {
         name: newGoal.title,
         targetAmount: newGoal.targetAmount,
         currentAmount: newGoal.savedAmount || 0,
-        deadline: new Date(newGoal.deadline),
-        createdAt: newGoal.createdAt,
+        deadline: new Date(newGoal.deadline + 'T00:00:00'), // Add time to DateOnly format
+        createdAt: new Date(newGoal.createdAt),
         progressPercentage: newGoal.progressPercentage,
         isCompleted: newGoal.isCompleted
       };
@@ -118,12 +118,33 @@ export const useGoals = () => {
 
   const updateGoal = async (goalId, goalData) => {
     try {
-      const response = await goalService.updateGoal(goalId, goalData);
+      // Convert frontend format to backend format
+      const backendGoalData = {
+        title: goalData.name,
+        targetAmount: goalData.targetAmount,
+        deadline: goalData.deadline.toISOString().split('T')[0], // Convert to DateOnly format
+        savedAmount: goalData.currentAmount || 0
+      };
+
+      const response = await goalService.updateGoal(goalId, backendGoalData);
       const updatedGoal = response.data;
+
+      // Map response back to frontend format
+      const mappedGoal = {
+        id: updatedGoal.goalId,
+        name: updatedGoal.title,
+        targetAmount: updatedGoal.targetAmount,
+        currentAmount: updatedGoal.savedAmount || 0,
+        deadline: new Date(updatedGoal.deadline + 'T00:00:00'),
+        createdAt: new Date(updatedGoal.createdAt),
+        progressPercentage: updatedGoal.progressPercentage,
+        isCompleted: updatedGoal.isCompleted
+      };
+
       setGoals(prev => prev.map(goal =>
-        goal.goalId === goalId ? updatedGoal : goal
+        goal.id === goalId ? mappedGoal : goal
       ));
-      return updatedGoal;
+      return mappedGoal;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -133,7 +154,7 @@ export const useGoals = () => {
   const deleteGoal = async (goalId) => {
     try {
       await goalService.deleteGoal(goalId);
-      setGoals(prev => prev.filter(goal => goal.goalId !== goalId));
+      setGoals(prev => prev.filter(goal => goal.id !== goalId));
     } catch (err) {
       setError(err.message);
       throw err;

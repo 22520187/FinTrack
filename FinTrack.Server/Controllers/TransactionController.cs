@@ -17,19 +17,23 @@ namespace FinTrack.Server.Controllers
         private readonly ITransactionRepository _transactionRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<TransactionController> _logger;
+        private readonly TimeZoneInfo vietnamTimeZone;
 
-        public TransactionController(ITransactionRepository transactionRepository, ICategoryRepository categoryRepository, IMapper mapper)
+        public TransactionController(ITransactionRepository transactionRepository, ICategoryRepository categoryRepository, IMapper mapper, ILogger<TransactionController> logger)
         {
             _transactionRepository = transactionRepository;
             _categoryRepository = categoryRepository;
             _mapper = mapper;
+            _logger = logger;
+            vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
         }
 
         [Authorize]
         [HttpPost("create")]
         public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] CreateTransactionDTO createTransactionDto)
         {
-            logger.LogInformation("CreateTransaction called with DTO: {@CreateTransactionDto}", createTransactionDto);
+            _logger.LogInformation("CreateTransaction called with DTO: {@CreateTransactionDto}", createTransactionDto);
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
@@ -51,7 +55,7 @@ namespace FinTrack.Server.Controllers
             if (!transaction.CreatedAt.HasValue)
             {
                 transaction.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
-                logger.LogInformation($"CreatedAt was not provided, setting to Vietnam time: {transaction.CreatedAt}");
+                _logger.LogInformation($"CreatedAt was not provided, setting to Vietnam time: {transaction.CreatedAt}");
             }
 
             await _categoryRepository.UpdateAsync(
