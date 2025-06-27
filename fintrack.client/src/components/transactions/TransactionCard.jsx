@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
-import { ArrowDown, ArrowUp, Edit, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Edit, Trash2, Star } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   Card,
@@ -9,7 +9,7 @@ import {
 } from '../ui/card';
 
 const TransactionCard = ({ transaction, onEdit, onDelete }) => {
-  const { transactionId, amount, type, categoryName, note, createdAt } = transaction;
+  const { transactionId, amount, type, categoryName, note, createdAt, isImportant } = transaction;
   console.log("createdAt", createdAt)
 
   console.log("transactionId", transactionId)
@@ -26,6 +26,9 @@ const TransactionCard = ({ transaction, onEdit, onDelete }) => {
             }
           </div>
           <span className="font-medium">{categoryName}</span>
+          {isImportant && (
+            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+          )}
         </div>
         <div className={`font-bold ${isExpense ? 'expense-text' : 'income-text'}`}>
           {isExpense ? '-' : '+'} ${amount.toFixed(2)}

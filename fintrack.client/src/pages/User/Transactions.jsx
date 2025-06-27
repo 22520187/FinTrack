@@ -40,6 +40,7 @@ const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [filterImportant, setFilterImportant] = useState('all'); // 'all', 'important', 'normal'
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -170,6 +171,16 @@ const Transactions = () => {
       // Filter by type
       if (filterType !== 'all' && transaction.type !== filterType) {
         return false;
+      }
+
+      // Filter by importance
+      if (filterImportant !== 'all') {
+        if (filterImportant === 'important' && !transaction.isImportant) {
+          return false;
+        }
+        if (filterImportant === 'normal' && transaction.isImportant) {
+          return false;
+        }
       }
 
       // Apply search filter (case insensitive)
@@ -318,15 +329,15 @@ const Transactions = () => {
         </Dialog>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="w-full sm:w-2/3">
+      <div className="flex flex-col lg:flex-row gap-4 mb-6">
+        <div className="w-full lg:w-1/2">
           <Input
             placeholder="Search by category or note..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="w-full sm:w-1/3">
+        <div className="w-full lg:w-1/4">
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by type" />
@@ -335,6 +346,18 @@ const Transactions = () => {
               <SelectItem value="all">All Transactions</SelectItem>
               <SelectItem value="income">Income Only</SelectItem>
               <SelectItem value="expense">Expenses Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-full lg:w-1/4">
+          <Select value={filterImportant} onValueChange={setFilterImportant}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by importance" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Transactions</SelectItem>
+              <SelectItem value="important">Important Only</SelectItem>
+              <SelectItem value="normal">Normal Only</SelectItem>
             </SelectContent>
           </Select>
         </div>
