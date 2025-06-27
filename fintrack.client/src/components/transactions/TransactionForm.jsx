@@ -20,7 +20,8 @@ const TransactionForm = ({
     amount: 0,
     type: 'expense',
     category: 'Food',
-    note: ''
+    note: '',
+    isImportant: false
   },
   mode = 'create',
   className = '',
@@ -31,6 +32,7 @@ const TransactionForm = ({
   const [type, setType] = useState(initialValues.type);
   const [categoryName, setCategoryName] = useState(initialValues.category || '');
   const [note, setNote] = useState(initialValues.note || '');
+  const [isImportant, setIsImportant] = useState(initialValues.isImportant || false);
 
   useEffect(() => {
     const getCategory = async () => {
@@ -77,6 +79,7 @@ const TransactionForm = ({
       type,
       categoryName,
       note: note.trim() !== '' ? note : undefined,
+      isImportant,
       createdAt: new Date(),
     });
 
@@ -85,6 +88,7 @@ const TransactionForm = ({
       setAmount(0);
       setCategoryName('');
       setNote('');
+      setIsImportant(false);
     }
   };
 
@@ -187,6 +191,19 @@ const TransactionForm = ({
               onChange={(e) => setNote(e.target.value)}
               rows={3}
             />
+          </div>
+
+          <div className="flex items-center space-x-2 text-left">
+            <input
+              type="checkbox"
+              id="isImportant"
+              checked={isImportant}
+              onChange={(e) => setIsImportant(e.target.checked)}
+              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
+            />
+            <label htmlFor="isImportant" className="text-sm font-medium text-primary-800 cursor-pointer">
+              Mark as Important
+            </label>
           </div>
         </CardContent>
 
