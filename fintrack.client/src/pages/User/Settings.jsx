@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Edit, LogOut, Check } from 'lucide-react';
+import fintrackLogo from '../../assets/fintrack.jpg';
 import {
   Card,
   CardContent,
@@ -309,8 +310,12 @@ const Settings = () => {
         <Card>
           <CardHeader>
             <div className="flex justify-center mb-4">
-              <div className="w-24 h-24 rounded-full bg-primary-500 flex items-center justify-center text-white text-xl">
-                Profile
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary-500">
+                <img 
+                  src={fintrackLogo} 
+                  alt="FinTrack Avatar" 
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </CardHeader>
