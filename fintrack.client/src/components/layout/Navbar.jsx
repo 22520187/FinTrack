@@ -4,12 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "../ui/button";
 import authService from '../../services/auth.service';
 
+// Component thanh điều hướng với responsive design và authentication
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   
   const isAuthenticated = authService.isAuthenticated();
   
+  // Xử lý click vào icon user (điều hướng đến settings hoặc login)
   const handleUserIconClick = () => {
     if (isAuthenticated) {
       navigate('/settings');
@@ -18,6 +20,7 @@ const Navbar = () => {
     }
   };
 
+  // Đóng menu mobile
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   const navigationItems = [

@@ -16,6 +16,7 @@ namespace FinTrack.Server.Controllers
         private readonly IReportRepository _reportRepository;
         private readonly IMapper _mapper;
 
+        // Khởi tạo controller với user repository, report repository và mapper
         public ReportController(IUserRepository userRepository, IReportRepository reportRepository, IMapper mapper)
         {
             _userRepository = userRepository;
@@ -23,6 +24,7 @@ namespace FinTrack.Server.Controllers
             _mapper = mapper;
         }
 
+        // Lấy tổng quan tài chính theo khoảng thời gian
         [Authorize]
         [HttpGet("financial-summary")]
         public async Task<ActionResult> GetFinancialSummary([FromQuery] string period = "year", [FromQuery] string startDate = null, [FromQuery] string endDate = null)
@@ -50,6 +52,7 @@ namespace FinTrack.Server.Controllers
             }
         }
 
+        // Lấy chi tiêu theo category trong khoảng thời gian
         [Authorize]
         [HttpGet("category-expenses")]
         public async Task<ActionResult> GetCategoryExpenses([FromQuery] string period = "year", [FromQuery] string startDate = null, [FromQuery] string endDate = null)
@@ -77,6 +80,7 @@ namespace FinTrack.Server.Controllers
             }
         }
 
+        // Tạo và lưu báo cáo với định dạng chỉ định
         [Authorize]
         [HttpPost("generate")]
         public async Task<ActionResult> GenerateReport([FromQuery] string period = "year", [FromQuery] string format = "pdf", [FromQuery] string startDate = null, [FromQuery] string endDate = null)
@@ -100,6 +104,7 @@ namespace FinTrack.Server.Controllers
             }
         }
 
+        // Tải xuống báo cáo đã tạo
         [Authorize]
         [HttpGet("download/{fileName}")]
         public async Task<ActionResult> DownloadReport(string fileName)
@@ -142,6 +147,7 @@ namespace FinTrack.Server.Controllers
             }
         }
 
+        // Lấy lịch sử các báo cáo đã tạo
         [Authorize]
         [HttpGet("history")]
         public async Task<ActionResult> GetReportHistory()
@@ -165,6 +171,7 @@ namespace FinTrack.Server.Controllers
         }
 
         #region Helper Methods
+        // Lấy user ID từ JWT token
         private UserIdResult GetUserIdFromToken()
         {
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
@@ -181,6 +188,7 @@ namespace FinTrack.Server.Controllers
             return UserIdResult.Success(userId);
         }
 
+        // Phân tích và chuyển đổi khoảng thời gian
         private DateRangeResult ParseDateRange(string period, string startDate, string endDate)
         {
             DateTime startDateTime;
@@ -209,6 +217,7 @@ namespace FinTrack.Server.Controllers
             return DateRangeResult.Success(startDateTime, endDateTime);
         }
 
+        // Lấy ngày bắt đầu dựa trên period
         private DateTime GetStartDateFromPeriod(string period)
         {
             if (int.TryParse(period, out int year))
@@ -227,6 +236,7 @@ namespace FinTrack.Server.Controllers
             };
         }
 
+        // Tạo chuỗi period cho báo cáo
         private string BuildReportPeriod(string period, string startDate, string endDate)
         {
             if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
@@ -244,6 +254,7 @@ namespace FinTrack.Server.Controllers
             return period;
         }
 
+        // Xác định content type dựa trên extension file
         private string GetContentType(string fileName)
         {
             return Path.GetExtension(fileName).ToLower() switch

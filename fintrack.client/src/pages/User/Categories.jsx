@@ -38,8 +38,8 @@ import { useToast } from '../../hooks/use-toast';
 import categoryService from '../../services/category.service';
 import { useNavigate } from 'react-router-dom';
 
+// Component quản lý danh sách categories với tính năng CRUD và filter
 const Categories = () => {
-
   const [categories, setCategories] = useState([]);
   const [filterType, setFilterType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +60,7 @@ const Categories = () => {
   const nav = useNavigate()
   const { toast } = useToast();
 
+  // Load danh sách categories khi component mount
   useEffect(()=> {
     const getCategory = async () => {
       try {
@@ -104,6 +105,7 @@ const Categories = () => {
     return true;
   });
 
+  // Thêm category mới với validation
   const handleAddCategory = async () => {
     if (newCategoryName.trim() === '') {
       toast({
@@ -162,10 +164,12 @@ const Categories = () => {
     }
   };
 
+  // Điều hướng đến trang transactions theo category
   const handleClickOnCategoryCard = (categoryName) => {
     nav(`/transactions?categoryName=${categoryName}`)
   }
 
+  // Mở dialog chỉnh sửa category
   const handleEditCategory = (categoryName, type) => {
     const category = categories.find(c => c.categoryName === categoryName && c.type === type);
     if (category) {
@@ -176,6 +180,7 @@ const Categories = () => {
     }
   };
 
+  // Cập nhật thông tin category
   const handleUpdateCategory = async () => {
     if (newCategoryName.trim() === '') {
       toast({

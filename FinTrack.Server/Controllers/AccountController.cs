@@ -19,6 +19,7 @@ namespace FinTrack.Server.Controllers
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
 
+        // Khởi tạo controller với user repository, token service và mapper
         public AccountController(
             IUserRepository userRepository,
             ITokenService tokenService,
@@ -29,6 +30,7 @@ namespace FinTrack.Server.Controllers
             _mapper = mapper;
         }
 
+        // Đăng ký tài khoản mới cho user
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
         {
@@ -82,6 +84,7 @@ namespace FinTrack.Server.Controllers
             }
         }
 
+        // Đăng nhập và tạo JWT token
         [HttpPost("login")]
         public async Task<ActionResult> Login(LoginRequest request)
         {
@@ -123,6 +126,7 @@ namespace FinTrack.Server.Controllers
             }
         }
 
+        // Thay đổi mật khẩu user
         [HttpPost("change-password")]
         public async Task<ActionResult<AuthResponse>> ChangePassword(ChangePasswordRequest request)
         {
@@ -168,6 +172,7 @@ namespace FinTrack.Server.Controllers
             }
         }
 
+        // Cập nhật thông tin cá nhân của user
         [Authorize]
         [HttpPut("update-info/{userId}")]
         public async Task<ActionResult<AuthResponse>> UpdateInfo(int userId, [FromBody] UpdateUserInfoRequest request)
@@ -252,6 +257,7 @@ namespace FinTrack.Server.Controllers
             }
         }
 
+        // Đăng xuất và xóa auth cookie
         [HttpPost("logout")]
         public async Task<ActionResult> Logout()
         {
@@ -282,6 +288,7 @@ namespace FinTrack.Server.Controllers
         }
 
         #region Helper Methods
+        // Mã hóa mật khẩu bằng SHA256
         private string HashPassword(string password)
         {
             using var sha256 = SHA256.Create();
@@ -297,6 +304,7 @@ namespace FinTrack.Server.Controllers
             return sb.ToString();
         }
 
+        // Xác thực mật khẩu với hash đã lưu
         private bool VerifyPassword(string password, string storedHash)
         {
             string hashedPassword = HashPassword(password);

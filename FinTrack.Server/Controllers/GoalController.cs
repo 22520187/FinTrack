@@ -17,6 +17,7 @@ namespace FinTrack.Server.Controllers
         private readonly IGoalProgressRepository _goalProgressRepository;
         private readonly IMapper _mapper;
 
+        // Khởi tạo controller với goal và goal progress repositories
         public GoalController(IGoalRepository goalRepository, IGoalProgressRepository goalProgressRepository, IMapper mapper)
         {
             _goalRepository = goalRepository;
@@ -24,6 +25,7 @@ namespace FinTrack.Server.Controllers
             _mapper = mapper;
         }
 
+        // Tạo mục tiêu tài chính mới cho user
         [Authorize]
         [HttpPost("create")]
         public async Task<ActionResult<GoalDTO>> CreateGoal([FromBody] CreateGoalDTO createGoalDto)
@@ -53,6 +55,7 @@ namespace FinTrack.Server.Controllers
             return Ok(goalResponse);
         }
 
+        // Lấy tất cả mục tiêu của user
         [Authorize]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<GoalDTO>>> GetAllGoalsByUserId()
@@ -71,6 +74,7 @@ namespace FinTrack.Server.Controllers
             return Ok(goalListResponse);
         }
 
+        // Lấy thông tin chi tiết một mục tiêu theo ID
         [Authorize]
         [HttpGet("{goalId}")]
         public async Task<ActionResult<GoalDTO>> GetGoalById(int goalId)
@@ -93,6 +97,7 @@ namespace FinTrack.Server.Controllers
             return Ok(goalResponse);
         }
 
+        // Cập nhật thông tin mục tiêu
         [Authorize]
         [HttpPut("{goalId}")]
         public async Task<ActionResult<GoalDTO>> UpdateGoal(int goalId, [FromBody] CreateGoalDTO updateGoalDto)
@@ -130,6 +135,7 @@ namespace FinTrack.Server.Controllers
             return Ok(goalResponse);
         }
 
+        // Xóa mục tiêu của user
         [Authorize]
         [HttpDelete("{goalId}")]
         public async Task<ActionResult> DeleteGoal(int goalId)
@@ -151,6 +157,7 @@ namespace FinTrack.Server.Controllers
             return Ok(new { message = "Goal deleted successfully." });
         }
 
+        // Thêm tiến độ cho mục tiêu và cập nhật số tiền đã tiết kiệm
         [Authorize]
         [HttpPost("{goalId}/progress")]
         public async Task<ActionResult<GoalProgressDTO>> AddGoalProgress(int goalId, [FromBody] CreateGoalProgressDTO createProgressDto)

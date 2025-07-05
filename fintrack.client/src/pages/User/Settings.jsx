@@ -20,6 +20,7 @@ import {
 import { useToast } from '../../hooks/use-toast';
 import authService from '../../services/auth.service';
 
+// Component trang cài đặt cho phép cập nhật profile và đổi mật khẩu
 const Settings = () => {
   const { toast } = useToast();
 
@@ -44,6 +45,7 @@ const Settings = () => {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load thông tin user khi component mount
   useEffect(() => {
     const userData = authService.getCurrentUser();
     
@@ -57,6 +59,7 @@ const Settings = () => {
     setIsLoading(false);
   }, []);
 
+  // Load danh sách tỉnh/thành phố từ API
   useEffect(() => {
     const fetchCities = async () => {
       try {
@@ -88,6 +91,7 @@ const Settings = () => {
     fetchCities();
   }, []);
 
+  // Load danh sách quận/huyện khi thay đổi tỉnh/thành phố
   useEffect(() => {
     const fetchDistricts = async () => {
       if (!editedProfile.city) {
@@ -132,6 +136,7 @@ const Settings = () => {
     }
   }, [editedProfile.city, isEditing]);
 
+  // Load danh sách phường/xã khi thay đổi quận/huyện
   useEffect(() => {
     const fetchWards = async () => {
       if (!editedProfile.district) {
@@ -188,6 +193,7 @@ const Settings = () => {
   const [isProfileUpdating, setIsProfileUpdating] = useState(false);
   const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
 
+  // Xử lý thay đổi thông tin profile
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setEditedProfile(prev => ({
@@ -196,7 +202,7 @@ const Settings = () => {
     }));
   };
 
-  // Handle profile update
+  // Cập nhật thông tin profile
   const handleProfileUpdate = async () => {
     setIsProfileUpdating(true);
 

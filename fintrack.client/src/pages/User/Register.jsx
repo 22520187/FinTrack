@@ -7,6 +7,7 @@ import LeftPanel from "../../components/Auth/LeftPanel";
 import RightPanel from "../../components/Auth/RightPanel";
 import authService from "../../services/auth.service";
 
+// Component trang đăng ký tài khoản mới với form validation
 const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -19,6 +20,7 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Cập nhật giá trị form input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -27,6 +29,7 @@ const Register = () => {
     }));
   };
 
+  // Xử lý đăng ký tài khoản với validation mật khẩu
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -117,6 +120,7 @@ const Register = () => {
     }
   ];
 
+  // Render các field trong form với animation
   const renderFormField = (field) => (
     <motion.div
       key={field.id}

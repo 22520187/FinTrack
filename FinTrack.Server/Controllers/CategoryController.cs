@@ -16,12 +16,14 @@ namespace FinTrack.Server.Controllers
         private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
 
+        // Khởi tạo controller với category repository và mapper
         public CategoryController(ICategoryRepository categoryRepository, IMapper mapper)
         {
             _categoryRepository = categoryRepository;
             _mapper = mapper;
         }
 
+        // Tạo category mới cho user
         [Authorize]
         [HttpPost("create")]
         public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CreateCategoryDTO CreateCategoryDto)
@@ -51,6 +53,7 @@ namespace FinTrack.Server.Controllers
         }
 
 
+        // Lấy tất cả category của user với tổng số tiền đã chi
         [Authorize]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAllCategoryByUserId()
@@ -86,6 +89,7 @@ namespace FinTrack.Server.Controllers
         }
 
 
+        // Lấy tổng số tiền đã chi cho một category cụ thể
         [Authorize]
         [HttpGet("total/{CategoryName}")]
         public async Task<ActionResult> GetTotalSpentOnCategory(string CategoryName, [FromQuery] string Type)
@@ -109,6 +113,7 @@ namespace FinTrack.Server.Controllers
             return Ok($"Total amount: {totalAmount}");
         }
 
+        // Cập nhật tên category (giữ nguyên type để đảm bảo tính toàn vẹn dữ liệu)
         [Authorize]
         [HttpPut("update/{CategoryName}")]
         public async Task<ActionResult<CategoryDTO>> UpdateCategory(string CategoryName, [FromQuery] string Type, [FromBody] CreateCategoryDTO updateCategoryDto)
@@ -144,6 +149,7 @@ namespace FinTrack.Server.Controllers
             return Ok(categoryResponse);
         }
 
+        // Xóa category của user
         [Authorize]
         [HttpDelete("delete/{CategoryName}")]
         public async Task<ActionResult> DeleteCategory(string CategoryName, [FromQuery] string Type)
