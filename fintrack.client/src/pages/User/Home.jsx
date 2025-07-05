@@ -10,6 +10,7 @@ import GoalProgressCard from '../../components/dashboard/GoalProgressCard';
 import { useToast } from '../../hooks/use-toast';
 import { useDashboard, useGoals, useTransactions } from '../../hooks/useAPI';
 
+// Component trang chủ hiển thị dashboard tài chính tổng quan
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -42,7 +43,7 @@ const Home = () => {
   // Handle loading states
   const isLoading = dashboardLoading || goalsLoading || transactionsLoading;
 
-  // Handle errors
+  // Xử lý hiển thị lỗi khi load dữ liệu
   useEffect(() => {
     if (dashboardError || goalsError || transactionsError) {
       toast({
@@ -58,6 +59,7 @@ const Home = () => {
   const totalIncome = summary?.totalIncome || 0;
   const totalExpense = summary?.totalExpense || 0;
 
+  // Xử lý thêm transaction mới và refresh dashboard
   const handleAddTransaction = async (newTransaction) => {
     setIsAddingTransaction(true);
     try {

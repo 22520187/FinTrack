@@ -13,13 +13,14 @@ import { useGoals } from '../../hooks/useAPI';
 import GoalCard from '../../components/goals/GoalCard';
 import GoalForm from '../../components/goals/GoalForm';
 
+// Component quản lý mục tiêu tài chính với CRUD operations
 const Goals = () => {
   const { goals, loading, error, createGoal, updateGoal, deleteGoal, addProgress } = useGoals();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
 
-  // Use useCallback for handlers to prevent unnecessary re-renders
+  // Xử lý thêm mục tiêu mới
   const handleAddGoal = useCallback(async (newGoal) => {
     try {
       console.log("newGoal",newGoal)
@@ -40,6 +41,7 @@ const Goals = () => {
     }
   }, [createGoal]);
 
+  // Mở dialog chỉnh sửa mục tiêu
   const handleEditGoal = useCallback((id) => {
     const goal = goals.find(g => g.id === id);
     if (goal) {
@@ -48,6 +50,7 @@ const Goals = () => {
     }
   }, [goals]);
 
+  // Cập nhật thông tin mục tiêu
   const handleUpdateGoal = useCallback(async (updatedGoal) => {
     if (!editingGoal) return;
 
@@ -70,6 +73,7 @@ const Goals = () => {
     }
   }, [editingGoal, updateGoal]);
 
+  // Xóa mục tiêu
   const handleDeleteGoal = useCallback(async (id) => {
     try {
       await deleteGoal(id);
@@ -88,6 +92,7 @@ const Goals = () => {
     }
   }, [deleteGoal]);
 
+  // Cập nhật tiến độ mục tiêu
   const handleUpdateProgress = useCallback(async (id, amount) => {
     try {
       await addProgress(id, { savedAmount: amount });

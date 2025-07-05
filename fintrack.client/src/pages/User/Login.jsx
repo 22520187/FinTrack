@@ -7,6 +7,7 @@ import LeftPanel from "../../components/Auth/LeftPanel";
 import RightPanel from "../../components/Auth/RightPanel";
 import authService from "../../services/auth.service";
 
+// Component trang đăng nhập với form validation và animation
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,14 +15,12 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Xử lý submit form đăng nhập và lưu token
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Here you would connect to authentication service
-      // For now we just simulate a login
-
       const data = {
         "email": email,
         "password": password

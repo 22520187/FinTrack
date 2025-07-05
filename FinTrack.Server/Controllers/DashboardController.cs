@@ -16,6 +16,7 @@ namespace FinTrack.Server.Controllers
         private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
 
+        // Khởi tạo controller với các repository cần thiết
         public DashboardController(
             ITransactionRepository transactionRepository,
             IGoalRepository goalRepository,
@@ -28,6 +29,7 @@ namespace FinTrack.Server.Controllers
             _mapper = mapper;
         }
 
+        // Lấy tổng quan tài chính của user (thu nhập, chi tiêu, số dư, mục tiêu)
         [Authorize]
         [HttpGet("summary")]
         public async Task<ActionResult<DashboardSummaryDTO>> GetDashboardSummary()
@@ -63,6 +65,7 @@ namespace FinTrack.Server.Controllers
             return Ok(summary);
         }
 
+        // Lấy chi tiêu theo từng category với màu sắc để hiển thị chart
         [Authorize]
         [HttpGet("category-expenses")]
         public async Task<ActionResult<IEnumerable<CategoryExpenseDTO>>> GetCategoryExpenses()
@@ -94,6 +97,7 @@ namespace FinTrack.Server.Controllers
             return Ok(categoryExpenses);
         }
 
+        // Lấy lịch sử giao dịch theo tháng trong khoảng thời gian chỉ định
         [Authorize]
         [HttpGet("transaction-history")]
         public async Task<ActionResult<IEnumerable<TransactionHistoryDTO>>> GetTransactionHistory([FromQuery] int months = 6)
@@ -132,6 +136,7 @@ namespace FinTrack.Server.Controllers
             return Ok(monthlyData);
         }
 
+        // Tạo màu sắc cho category dựa trên index
         private string GetCategoryColor(int index)
         {
             var colors = new[]

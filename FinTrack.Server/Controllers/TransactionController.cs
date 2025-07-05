@@ -20,6 +20,7 @@ namespace FinTrack.Server.Controllers
         private readonly ILogger<TransactionController> _logger;
         private readonly TimeZoneInfo vietnamTimeZone;
 
+        // Khởi tạo controller với các dependency cần thiết
         public TransactionController(ITransactionRepository transactionRepository, ICategoryRepository categoryRepository, IMapper mapper, ILogger<TransactionController> logger)
         {
             _transactionRepository = transactionRepository;
@@ -29,6 +30,7 @@ namespace FinTrack.Server.Controllers
             vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
         }
 
+        // Tạo transaction mới và cập nhật tổng amount của category
         [Authorize]
         [HttpPost("create")]
         public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] CreateTransactionDTO createTransactionDto)
@@ -70,14 +72,13 @@ namespace FinTrack.Server.Controllers
             var transactionResponse = _mapper.Map<TransactionDTO>(createdTransaction);
 
             return Ok(transactionResponse);
-
         }
 
+        // Lấy tất cả transaction của user hiện tại
         [Authorize]
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetAllTransactionByUserId()
         {
-
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
@@ -90,9 +91,9 @@ namespace FinTrack.Server.Controllers
             var transactionListResponse = _mapper.Map<IEnumerable<TransactionDTO>>(transactionListByUserId);
 
             return Ok(transactionListResponse);
-
         }
 
+        // Lấy các transaction theo tên category
         [Authorize] // Ensures only authenticated users can access this endpoint
         [HttpGet("all/{CategoryName}")]
         public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactionsByCategoryName(string CategoryName)
@@ -111,6 +112,7 @@ namespace FinTrack.Server.Controllers
             return Ok(transactionListResponse);
         }
 
+        // Cập nhật thông tin transaction và điều chỉnh category amount
         [HttpPut("update/{TransactionId}")]
         public async Task<ActionResult<TransactionDTO>> UpdateTransaction(int TransactionId, [FromBody] TransactionDTO transactionDto)
         {
@@ -150,6 +152,7 @@ namespace FinTrack.Server.Controllers
             return Ok(updatedTransaction);
         }
 
+        // Xóa transaction và trừ amount khỏi category
         [HttpDelete("delete/{TransactionId}")]
         public async Task<ActionResult> DeleteTransaction(int TransactionId)
         {
@@ -162,7 +165,6 @@ namespace FinTrack.Server.Controllers
                 }
             );
 
-
             if (deleted == null)
             {
                 return NotFound($"Transaction with ID {TransactionId} not found.");
@@ -170,8 +172,6 @@ namespace FinTrack.Server.Controllers
 
             return Ok("Deleted successfully");
         }
-
-
 
         // [HttpPut]
         // public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] TransactionDTO transactionDto)
@@ -187,14 +187,11 @@ namespace FinTrack.Server.Controllers
         //     var transactionResponse = _mapper.Map<TransactionDTO>(createdTransaction);
 
         //     return Ok(transactionResponse);
-
         // }
 
         // [HttpGet]
         // public async Task<ActionResult> GetAllUsers()
         // {
-
         // }
-
     }
 }

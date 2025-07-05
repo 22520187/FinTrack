@@ -33,7 +33,7 @@ import { useToast } from '../../hooks/use-toast';
 import categoryService from '../../services/category.service'
 import { useSearchParams } from 'react-router-dom';
 
-
+// Component quản lý danh sách transaction với filter, search và CRUD operations
 const Transactions = () => {
   const [categories, setCategories] = useState();
   const [filteredCategorieType, setFilteredCategorieType] = useState("")
@@ -56,16 +56,16 @@ const Transactions = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Thiết lập filter từ URL params khi component mount
   useEffect(() => {
     if (params.get("categoryName")) {
       setFilteredCategorieType(params.get("categoryName"))
       setSearchQuery(params.get("categoryName"))
       didSetFromParam.current = true;
     }
-
-
   }, [])
 
+  // Reset search query khi thay đổi filter type
   useEffect(() => {
     if (isFirstMounted.current) {
       isFirstMounted.current = false;
@@ -73,7 +73,6 @@ const Transactions = () => {
     }
 
     if (filterType === 'all') {
-
       if (didSetFromParam.current) {
         didSetFromParam.current = false; // reset this flag for future
         return;
@@ -81,9 +80,9 @@ const Transactions = () => {
 
       setSearchQuery("");
     }
-
   }, [filterType]);
 
+  // Load danh sách categories từ API
   useEffect(() => {
     const getCategory = async () => {
       try {
@@ -114,6 +113,8 @@ const Transactions = () => {
 
     getCategory()
   }, [])
+  
+  // Load danh sách transactions từ API
   useEffect(() => {
     const getAllTransaction = async () => {
       try {
@@ -145,6 +146,7 @@ const Transactions = () => {
     getAllTransaction()
   }, [])
 
+  // Chuyển đổi thời gian về múi giờ Việt Nam
   function toVietnamTime(dateString) {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -197,6 +199,7 @@ const Transactions = () => {
     })
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by newest first
 
+  // Xử lý thêm transaction mới
   const handleAddTransaction = async (newTransaction) => {
     console.log("newTransaction", newTransaction);
 
@@ -229,6 +232,7 @@ const Transactions = () => {
     }
   };
 
+  // Mở dialog chỉnh sửa transaction
   const handleEditTransaction = (id) => {
     console.log("id", id)
     const transaction = transactions.find(t => t.transactionId === id);
@@ -238,6 +242,7 @@ const Transactions = () => {
     }
   };
 
+  // Cập nhật thông tin transaction
   const handleUpdateTransaction = async (updatedTransaction) => {
     console.log("editingTransaction", editingTransaction)
 
@@ -275,10 +280,12 @@ const Transactions = () => {
     }
   };
 
+  // Xác nhận xóa transaction
   const handleDeleteTransaction = (id) => {
     setDeletingId(id);
   };
 
+  // Thực hiện xóa transaction sau khi confirm
   const confirmDelete = async () => {
     if (deletingId) {
       try {

@@ -9,10 +9,12 @@ namespace FinTrack.Server.Repositories.Implement
 {
     public class SQLTransactionRepository : FinTrackRepository<Transaction>, ITransactionRepository
     {
+        // Khởi tạo repository kế thừa từ FinTrackRepository
         public SQLTransactionRepository(FinTrackDbContext dbContext) : base(dbContext)
         {
         }
 
+        // Lấy tất cả transaction của user sắp xếp theo ngày tạo giảm dần
         public async Task<List<Transaction>> GetTransactionsByUserIdAsync(int userId)
         {
             return await _dbSet
@@ -21,6 +23,7 @@ namespace FinTrack.Server.Repositories.Implement
                 .ToListAsync();
         }
 
+        // Lấy transaction theo tên category và user ID
         public async Task<List<Transaction>> GetTransactionsByCategoryNameAsync(string CategoryName, int UserId)
         {
             return await _dbSet
@@ -29,6 +32,7 @@ namespace FinTrack.Server.Repositories.Implement
                 .ToListAsync();
         }
 
+        // Tính tổng thu nhập của user
         public async Task<decimal> GetTotalIncomeByUserIdAsync(int userId)
         {
             return await _dbSet
@@ -36,6 +40,7 @@ namespace FinTrack.Server.Repositories.Implement
                 .SumAsync(t => t.Amount);
         }
 
+        // Tính tổng chi tiêu của user
         public async Task<decimal> GetTotalExpenseByUserIdAsync(int userId)
         {
             return await _dbSet
@@ -43,6 +48,7 @@ namespace FinTrack.Server.Repositories.Implement
                 .SumAsync(t => t.Amount);
         }
 
+        // Lấy transaction trong khoảng thời gian
         public async Task<List<Transaction>> GetTransactionsByUserIdAndDateRangeAsync(int userId, DateTime startDate, DateTime endDate)
         {
             return await _dbSet
@@ -51,6 +57,7 @@ namespace FinTrack.Server.Repositories.Implement
                 .ToListAsync();
         }
 
+        // Lấy transaction theo loại (income/expense)
         public async Task<List<Transaction>> GetTransactionsByUserIdAndTypeAsync(int userId, string type)
         {
             return await _dbSet
@@ -59,7 +66,7 @@ namespace FinTrack.Server.Repositories.Implement
                 .ToListAsync();
         }
 
-        // Override base method to add ordering by CreatedAt
+        // Override phương thức base để thêm sắp xếp theo CreatedAt
         public new async Task<List<Transaction>> GetByUserIdAsync(int userId)
         {
             return await _dbSet

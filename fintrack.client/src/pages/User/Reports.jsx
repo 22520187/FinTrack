@@ -39,6 +39,7 @@ const datePresets = [
   },
 ];
 
+// Component báo cáo tài chính với chart và export chức năng
 const Reports = () => {
   // Initialize with last 12 months as default
   const [dateRange, setDateRange] = useState([
@@ -52,10 +53,12 @@ const Reports = () => {
   const [categoryExpenses, setCategoryExpenses] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
+  // Xử lý thay đổi khoảng thời gian
   const handleDateRangeChange = (dates) => {
     setDateRange(dates);
   };
 
+  // Load dữ liệu báo cáo khi thay đổi date range
   useEffect(() => {
     const fetchReportData = async () => {
       if (!dateRange || !dateRange[0] || !dateRange[1]) {
@@ -96,6 +99,7 @@ const Reports = () => {
     fetchReportData();
   }, [dateRange, toast]);
 
+  // Xuất báo cáo theo format (PDF/Excel)
   const handleExport = async (format) => {
     if (!dateRange || !dateRange[0] || !dateRange[1]) {
       toast({
@@ -151,6 +155,7 @@ const Reports = () => {
     }
   };
 
+  // Chuyển đổi dữ liệu cho chart
   const getChartData = () => {
     if (!financialSummary?.monthlyData) {
       return [];
@@ -165,6 +170,7 @@ const Reports = () => {
 
   const { totalIncome = 0, totalExpense = 0, savingsRate = 0 } = financialSummary || {};
 
+  // Render button export với loading state
   const renderExportButton = (format, label) => (
     <Button
       variant="outline"
@@ -180,6 +186,7 @@ const Reports = () => {
     </Button>
   );
 
+  // Render card thống kê tổng quan
   const renderSummaryCard = (title, value, className) => (
     <Card>
       <CardHeader>

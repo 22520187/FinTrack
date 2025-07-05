@@ -14,6 +14,7 @@ import {
 import { useEffect } from 'react';
 import categoryService from '../../services/category.service';
 
+// Component form thêm/chỉnh sửa transaction với validation
 const TransactionForm = ({
   onSubmit,
   initialValues = {
@@ -34,6 +35,7 @@ const TransactionForm = ({
   const [note, setNote] = useState(initialValues.note || '');
   const [isImportant, setIsImportant] = useState(initialValues.isImportant || false);
 
+  // Load danh sách categories từ API
   useEffect(() => {
     const getCategory = async () => {
       const response = await categoryService.getAllCategory()
@@ -56,11 +58,12 @@ const TransactionForm = ({
     getCategory()
   }, [])
 
-  // Reset category when type changes
+  // Reset category khi thay đổi type (income/expense)
   useEffect(() => {
     setCategoryName('');
   }, [type])
 
+  // Xử lý submit form với validation
   const handleSubmit = (e) => {
     e.preventDefault();
 
